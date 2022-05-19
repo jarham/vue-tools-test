@@ -1,7 +1,7 @@
 {
   "name": "vue-tools-test",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.0-development",
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
@@ -15,7 +15,8 @@
     "commit": "cz",
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "vue": "^3.2.25"
@@ -23,10 +24,13 @@
   "devDependencies": {
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/git": "^10.0.1",
     "@vitejs/plugin-vue": "^2.3.3",
     "commitizen": "^4.2.4",
     "cz-conventional-changelog": "3.3.0",
     "husky": "^8.0.1",
+    "semantic-release": "^19.0.2",
     "typescript": "^4.5.4",
     "vite": "^2.9.9",
     "vue-tsc": "^0.34.7"
