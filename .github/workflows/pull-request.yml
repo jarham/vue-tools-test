@@ -37,4 +37,4 @@ jobs:
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
           PR_NUMBER: ${{ github.event.number }}
           RUN_NUMBER: ${{ github.run_number }}
-        run: aws s3 cp --recursive dist/* "s3://${AWS_BUCKET}/prs/${PR_NUMBER}/${RUN_NUMBER}/"
+        run: aws s3 cp --recursive dist/ "s3://${AWS_BUCKET}/prs/${PR_NUMBER}/${RUN_NUMBER}/"
