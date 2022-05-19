@@ -1,0 +1,35 @@
+name: Pull Request preview
+on: [pull_request]
+jobs:
+  build-pr:
+    name: Build Pull Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.1.0
+        with:
+          version: latest
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm run build
+      - name: Upload to S3
+        env:
+          DEST: ${{ format('prs/{0}/{1}', github.event.number, github.run_number) }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        uses: shallwefootball/s3-upload-action@master
+        id: S3
+        with:
+          aws_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+          aws_bucket: ${{ secrets.AWS_BUCKET }}
+          source_dir: dist
+          destination_dir: ${{ env.DEST }}
