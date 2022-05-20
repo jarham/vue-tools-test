@@ -31,6 +31,9 @@ const count = ref(1)
     Edit
     <code>components/HelloWorld.vue</code> to test hot module replacement.
   </p>
+  <p>
+    Lulz for you.
+  </p>
 </template>
 
 <style scoped>
