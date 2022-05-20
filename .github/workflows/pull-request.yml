@@ -52,14 +52,12 @@ jobs:
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
-          # https://github.com/jarham/vue-tools-test/actions/runs/2356549235
-          # https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/3/6/index.html
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `Build artifacts: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>
+              body: `Build job with artifacts: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>
 
-                Build artifacts: <https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html`
+              Test your PR online: <https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html`
             })
