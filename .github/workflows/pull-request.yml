@@ -21,11 +21,18 @@ jobs:
         run: pnpm install
       - name: Build
         run: pnpm run build
-      - name: Setup Python
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+          with:
+            name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
+            path: |
+              dist
+            retention-days: 60 # default 90 days
+      - name: Setup Python (for AWS cli)
         uses: actions/setup-python@v3
         with:
           python-version: 3.x
-      - name: Install aws cli
+      - name: Install AWS cli
         run: |
           python -m pip install --upgrade pip
           pip install awscli
