@@ -24,7 +24,7 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
           path: |
             dist
           retention-days: 60 # default 90 days
@@ -43,5 +43,23 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
           AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
           PR_NUMBER: ${{ github.event.number }}
-          RUN_NUMBER: ${{ github.run_number }}
-        run: aws s3 cp --recursive dist/ "s3://${AWS_BUCKET}/prs/${PR_NUMBER}/${RUN_NUMBER}/"
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: aws s3 cp --recursive dist/ "s3://${AWS_BUCKET}/prs/${PR_NUMBER}/${RUN_ATTEMPT}/"
+      - name: Leave a comment to PR
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{secrets.GH_TOKEN}}
+          # Note the indentation of body!
+          # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
+          # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
+          # https://github.com/jarham/vue-tools-test/actions/runs/2356549235
+          # https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/3/6/index.html
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Build artifacts: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>
+
+                Build artifacts: <https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html`
+            })
