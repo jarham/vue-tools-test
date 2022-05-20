@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/jarham/vue-tools-test/compare/v1.0.1...v1.0.2) (2022-05-20)
+
+
+### Bug Fixes
+
+* counter must start from 1 ([9e9a627](https://github.com/jarham/vue-tools-test/commit/9e9a6271e429175afe75d30814f668c58625ea5d))
+
 ## [1.0.1](https://github.com/jarham/vue-tools-test/compare/v1.0.0...v1.0.1) (2022-05-20)
 
 
