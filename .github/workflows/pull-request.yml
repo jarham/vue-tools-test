@@ -23,11 +23,11 @@ jobs:
         run: pnpm run build
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
-          with:
-            name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
-            path: |
-              dist
-            retention-days: 60 # default 90 days
+        with:
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
+          path: |
+            dist
+          retention-days: 60 # default 90 days
       - name: Setup Python (for AWS cli)
         uses: actions/setup-python@v3
         with:
