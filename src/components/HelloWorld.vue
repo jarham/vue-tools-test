@@ -38,7 +38,7 @@ const count = ref(1)
     Let's pretend this is a feature.
   </p>
   <p>
-    Let's pretend this is another feature.
+    Let's pretend this is another feature + a fix.
   </p>
 </template>
 
