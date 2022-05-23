@@ -37,6 +37,9 @@ const count = ref(1)
   <p>
     Let's pretend this is a feature.
   </p>
+  <p>
+    Let's pretend this is another feature.
+  </p>
 </template>
 
 <style scoped>
