@@ -31,6 +31,15 @@ const count = ref(1)
     Edit
     <code>components/HelloWorld.vue</code> to test hot module replacement.
   </p>
+  <p>
+    Let's pretend this breaks it.
+  </p>
+  <p>
+    Let's pretend this is a feature.
+  </p>
+  <p>
+    Let's pretend this is another feature + a fix.
+  </p>
 </template>
 
 <style scoped>
