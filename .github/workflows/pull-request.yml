@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
-      test-link: ${{ steps.test-link.outputs.result }}
+      test-link: ${{ steps.test-link.outputs.test-link }}
     steps:
       - name: Get build artifact
         id: build-and-deploy
@@ -154,10 +154,6 @@ jobs:
               ${{ needs.commitlint.outputs.result }}
               ${{ needs.eslint.outputs.result }}
 
-              run_id: ${{ github.run_id }}
-              run_number: ${{ github.run_number }}
-              run_attempt: ${{ github.run_number }}
-
               Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
 
@@ -187,10 +183,6 @@ jobs:
               ${{ needs.deploy.outputs.result }}
               ${{ needs.commitlint.outputs.result }}
               ${{ needs.eslint.outputs.result }}
-
-              run_id: ${{ github.run_id }}
-              run_number: ${{ github.run_number }}
-              run_attempt: ${{ github.run_number }}
 
               Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
