@@ -1,0 +1,80 @@
+name: Pull Request build and preview deployment
+on: [pull_request]
+jobs:
+  build-pr:
+    name: Build and deploy Pull Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.1.0
+        with:
+          version: latest
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+          cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm run build
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
+          path: |
+            dist
+          retention-days: 60 # default 90 days
+      - name: Setup Python (for AWS cli)
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.x
+      - name: Configure AWS credentials for S3 deployment
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      # aws cli is avaiabled already in GH image
+      # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
+      #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+      - name: Deploy artifacts to S3
+        if: ${{ success() }}
+        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET }}/prs/${{ github.event.number }}/${{ github.run_attempt }}/"
+      - name: Leave a comment to PR on success
+        if: ${{ success() }}
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          # Note the indentation of body!
+          # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
+          # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Great success! 🥳 Your pull request was built and has been deployed for testing:
+              <https://oit-test-bucket.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html>
+
+              Build job with artifacts can be found here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            })
+      - name: Leave a comment to PR on failure
+        if: ${{ failure() }}
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          # Note the indentation of body!
+          # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
+          # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
+          script: |
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `Something went wrong with your PR's build job! 😭
+
+                Check the build job for possible errors: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+              })
