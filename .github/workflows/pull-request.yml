@@ -1,0 +1,188 @@
+name: Pull Request
+on: [pull_request]
+env:
+  # NOTE: BUCKET_NAME gets displayed publicly!
+  # But GitHub will not allow a secret to be used in job output
+  # so using env var to make link to PR test app.
+  BUCKET_NAME: oit-test-bucket
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.1.0
+        with:
+          version: latest
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+          cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build && touch build-ok
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
+          path: |
+            dist
+          retention-days: 60 # default 90 days
+      - name: Set result
+        if: ${{ always() }}
+        id: result
+        run: 'test -f build-ok && echo "::set-output name=result::- **✔️ Build**: Success 🛠️" || echo "::set-output name=result::- **🛑 Build**: FAILED 💩"'
+
+  deploy:
+    name: Deploy
+    if: ${{ always() }}
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
+      test-link: ${{ steps.test-link.outputs.result }}
+    steps:
+      - name: Get build artifact
+        id: build-and-deploy
+        uses: actions/download-artifact@v3
+        with:
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
+          path: dist
+      - name: Configure AWS credentials for S3 deployment
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      # aws cli is avaiabled already in GH image
+      # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
+      #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+      - name: Deploy artifacts to S3
+        run: aws s3 cp --recursive dist/ "s3://${{ env.BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_attempt }}/" && touch deploy-ok
+      - name: Set result
+        if: ${{ always() }}
+        id: result
+        # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <https://${{ env.BUCKET_NAME }}.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+      - name: Set test link
+        if: ${{ always() }}
+        id: test-link
+        # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
+        run: echo "::set-output name=test-link::https://${{ env.BUCKET_NAME }}.s3.eu-north-1.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html"
+
+  commitlint:
+    name: Run commitlint
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Run commitlint
+        uses: wagoid/commitlint-github-action@v4
+        with:
+          configFile: .commitlintrc.yaml
+      - name: Mark passed
+        run: touch commits-ok
+      - name: Set result
+        if: ${{ always() }}
+        id: result
+        run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 🧐" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 😠"'
+
+  eslint:
+    name: Run eslint
+    # Run after build just in case to avoid cache getting messed up, but run always.
+    # (Not sure if setup-node could handle parallel access).
+    if: ${{ always() }}
+    needs: [build]
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.result.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2.1.0
+        with:
+          version: latest
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: lts/*
+          cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run eslint
+        run: pnpm run lint && touch eslint-ok
+      - name: Set result
+        if: ${{ always() }}
+        id: result
+        run: 'test -f eslint-ok && echo "::set-output name=result::- **✔️ eslint**: Success 🧐" || echo "::set-output name=result::- **🛑 eslint**: FAILED 😠"'
+
+  comment-success:
+    name: Leave a comment on success
+    needs: [build, deploy, commitlint, eslint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Leave a comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          # Note the indentation of body!
+          # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
+          # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Great success! 🥳 Your pull request was built and has been deployed for testing:
+              <{{ needs.deploy.outputs.test-link }}>
+
+              **Job summary:**
+
+              ${{ needs.build.outputs.result }}
+              ${{ needs.deploy.outputs.result }}
+              ${{ needs.commitlint.outputs.result }}
+              ${{ needs.eslint.outputs.result }}
+
+              Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            })
+
+  comment-failure:
+    name: Leave a comment on failure
+    if: ${{ failure() }}
+    needs: [build, deploy, commitlint, eslint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Leave a comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          # Note the indentation of body!
+          # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
+          # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Something went wrong with your PR's build job! 😭 See summary and build job link below 👇
+
+              **Job summary:**
+
+              ${{ needs.build.outputs.result }}
+              ${{ needs.deploy.outputs.result }}
+              ${{ needs.commitlint.outputs.result }}
+              ${{ needs.eslint.outputs.result }}
+
+              Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            })
