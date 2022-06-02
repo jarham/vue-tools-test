@@ -31,7 +31,7 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: |
             dist
           retention-days: 60 # default 90 days
@@ -53,7 +53,7 @@ jobs:
         id: build-and-deploy
         uses: actions/download-artifact@v3
         with:
-          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_attempt }}
+          name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: dist
       - name: Configure AWS credentials for S3 deployment
         uses: aws-actions/configure-aws-credentials@v1
@@ -65,17 +65,17 @@ jobs:
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy artifacts to S3
-        run: aws s3 cp --recursive dist/ "s3://${{ env.BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_attempt }}/" && touch deploy-ok
+        run: aws s3 cp --recursive dist/ "s3://${{ env.BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
       - name: Set result
         if: ${{ always() }}
         id: result
         # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
-        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
       - name: Set test link
         if: ${{ always() }}
         id: test-link
         # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
-        run: echo "::set-output name=test-link::https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_attempt }}/index.html"
+        run: echo "::set-output name=test-link::https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_number }}/index.html"
 
   commitlint:
     name: Run commitlint
@@ -154,6 +154,10 @@ jobs:
               ${{ needs.commitlint.outputs.result }}
               ${{ needs.eslint.outputs.result }}
 
+              run_id: ${{ github.run_id }}
+              run_number: ${{ github.run_number }}
+              run_attempt: ${{ github.run_number }}
+
               Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
 
@@ -183,6 +187,10 @@ jobs:
               ${{ needs.deploy.outputs.result }}
               ${{ needs.commitlint.outputs.result }}
               ${{ needs.eslint.outputs.result }}
+
+              run_id: ${{ github.run_id }}
+              run_number: ${{ github.run_number }}
+              run_attempt: ${{ github.run_number }}
 
               Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
