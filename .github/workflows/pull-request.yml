@@ -82,6 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.result.outputs.result }}
+      warn-many-commits: ${{ steps.warn-many-commits.outputs.warn-many-commits }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -91,12 +92,29 @@ jobs:
         uses: wagoid/commitlint-github-action@v4
         with:
           configFile: .commitlintrc.yaml
+      - name: Fail if too many commits
+        if: ${{ github.event.pull_request.commits > 30 }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.setFailed('You have ${{ github.event.pull_request.commits }} commits in your PR! Hard limit is 30.')
       - name: Mark passed
         run: touch commits-ok
       - name: Set result
         if: ${{ always() }}
         id: result
         run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 🧐" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 😠"'
+      - name: Set many commits warning
+        if: ${{ always() }}
+        id: warn-many-commits
+        # NOTE: Multiline strings get "truncated" to only the first line. Newlines must be escaped as %0A.
+        # See: https://github.community/t/set-output-truncates-multiline-strings/16852/3
+        run: |
+          N=${{ github.event.pull_request.commits }}; if [[ $N -gt 30 ]]; then \
+            echo "::set-output name=warn-many-commits::%0A**🛑 ERROR: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check will fail! 🛑**%0A"; \
+          elif [[ $N -ge 20 ]]; then \
+           echo "::set-output name=warn-many-commits::%0A**⚠️ WARNING: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check starts failing after that count! ⚠️**%0A"; \
+          else echo "::set-output name=warn-many-commits::"; fi
 
   eslint:
     name: Run eslint
@@ -145,16 +163,16 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `Great success! 🥳 Your pull request was built and has been deployed for testing: <${{ needs.deploy.outputs.test-link }}>
+              body: `\`🤖 Build Bot\` says: Great success! 🥳 Your pull request was built and has been deployed for testing: <${{ needs.deploy.outputs.test-link }}>
+            ${{ needs.commitlint.outputs.warn-many-commits }}
+            **Job summary:**
 
-              **Job summary:**
+            ${{ needs.build.outputs.result }}
+            ${{ needs.deploy.outputs.result }}
+            ${{ needs.commitlint.outputs.result }}
+            ${{ needs.eslint.outputs.result }}
 
-              ${{ needs.build.outputs.result }}
-              ${{ needs.deploy.outputs.result }}
-              ${{ needs.commitlint.outputs.result }}
-              ${{ needs.eslint.outputs.result }}
-
-              Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
 
   comment-failure:
@@ -175,14 +193,14 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `Something went wrong with your PR's build job! 😭 See summary and build job link below 👇
+              body: `\`🤖 Build Bot\` says: Something went wrong with your PR's build job! 😭 See summary and build job link below 👇
+            ${{ needs.commitlint.outputs.warn-many-commits }}
+            **Job summary:**
 
-              **Job summary:**
+            ${{ needs.build.outputs.result }}
+            ${{ needs.deploy.outputs.result }}
+            ${{ needs.commitlint.outputs.result }}
+            ${{ needs.eslint.outputs.result }}
 
-              ${{ needs.build.outputs.result }}
-              ${{ needs.deploy.outputs.result }}
-              ${{ needs.commitlint.outputs.result }}
-              ${{ needs.eslint.outputs.result }}
-
-              Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
