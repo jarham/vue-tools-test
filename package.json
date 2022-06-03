@@ -18,7 +18,8 @@
     "preview": "vite preview",
     "lint": "eslint --ext .ts,.vue,.json,.js .",
     "lint:fix": "eslint --ext .ts,.vue,.json,.js --fix .",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "semantic-release:dry-run": "semantic-release --dry-run --no-ci"
   },
   "dependencies": {
     "vue": "^3.2.25"
@@ -27,6 +28,7 @@
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",

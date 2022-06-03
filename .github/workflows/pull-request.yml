@@ -27,7 +27,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
-        run: pnpm run build && touch build-ok
+        run: |
+          echo "APP_VERSION=v$(jq -r .version package.json)-pr-${{ github.event.number }}-build-${{ github.run_number }}-preview" >> .env.production.local
+          echo "APP_LINK=${{ github.event.pull_request.html_url }}" >> .env.production.local
+          cat .env.production.local
+          pnpm run build && touch build-ok
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:

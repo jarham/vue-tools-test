@@ -2,6 +2,8 @@
 import { ref } from "vue";
 
 defineProps<{ msg: string }>();
+const version = __APP_VERSION__;
+const appLink = __APP_LINK__;
 
 const count = ref(1);
 </script>
@@ -34,6 +36,11 @@ const count = ref(1);
   <p>Let's pretend this breaks it.</p>
   <p>Let's pretend this is a feature.</p>
   <p>Let's pretend this is another feature + a fix.</p>
+  <p v-if="appLink">
+    <a :href="appLink" target="_blank">App version: {{ version }}</a>
+  </p>
+  <p v-else>App version: {{ version }}</p>
+  <p>App link: {{ appLink }}</p>
 </template>
 
 <style scoped>

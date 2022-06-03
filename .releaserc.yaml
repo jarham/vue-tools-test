@@ -17,3 +17,7 @@ plugins:
 - - '@semantic-release/github'
   - assets:
     - 'dist/**'
+- - '@semantic-release/exec'
+  # Get next version info to file to be used in build
+  # See: https://github.com/semantic-release/semantic-release/issues/1647#issuecomment-707934082
+  - verifyConditionsCmd: 'echo ${nextRelease.version} >> .version.local'

@@ -22,8 +22,22 @@ jobs:
           version: latest
       - name: Install dependencies
         run: pnpm install
+      - name: Get release version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        # semantic-release:dry-run generates .version.local file
+        # See: .releaserc.yaml
+        run: pnpm run semantic-release:dry-run
+      - name: Make sure .version.local exists
+        run: |
+          ls -la
+          test -f .version.local
+          cat .version.local
       - name: Build
-        run: pnpm run build
+        run: |
+          echo "APP_VERSION=$(cat .version.local)" >> .env.production.local
+          echo "APP_LINK=${{ github.server_url }}/${{ github.repository }}/releases/tag/$(cat .version.local)" >> .env.production.local
+          pnpm run build
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
