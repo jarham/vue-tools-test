@@ -21,7 +21,7 @@ jobs:
         with:
           version: latest
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Get release version
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -35,10 +35,31 @@ jobs:
           cat .version.local
       - name: Build
         run: |
-          echo "APP_VERSION=$(cat .version.local)" >> .env.production.local
-          echo "APP_LINK=${{ github.server_url }}/${{ github.repository }}/releases/tag/$(cat .version.local)" >> .env.production.local
+          echo "APP_VERSION=v$(cat .version.local)" >> .env.production.local
+          echo "APP_LINK=${{ github.server_url }}/${{ github.repository }}/releases/tag/v$(cat .version.local)" >> .env.production.local
+          echo "APP_IS_RELEASE=true" >> .env.production.local
+          cat .env.production.local
           pnpm run build
+      - name: Package
+        run: |
+          mkdir -p release.local
+          bsdtar -acf release.local/oit-v$(cat .version.local).tar.gz -C dist .
+          bsdtar -acf release.local/oit-v$(cat .version.local).zip -C dist .
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm run semantic-release
+      - name: Configure AWS credentials for S3 deployment
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      # aws cli is available already in GH image
+      # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
+      #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
+      - name: Deploy artifacts to S3
+        # Add to "releases path" and to root
+        run: |
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/release/v$(cat .version.local)/"
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/"
