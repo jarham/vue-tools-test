@@ -4,8 +4,7 @@ on: [pull_request]
   # But GitHub will not allow a secret to be used in job output
   # so using env vars to make link to PR test app.
 env:
-  BUCKET_NAME: oit-test-bucket
-  REGION: eu-north-1
+  APP_SERVER: https://d3bavttkp9gkki.cloudfront.net
 jobs:
   build:
     name: Build
@@ -38,7 +37,7 @@ jobs:
           name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: |
             dist
-          retention-days: 60 # default 90 days
+          retention-days: 30 # default 90 days
       - name: Set result
         if: ${{ always() }}
         id: result
@@ -64,22 +63,22 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.REGION }}
-      # aws cli is avaiabled already in GH image
+          aws-region: ${{ secrets.AWS_REGION }}
+      # aws cli is available already in GH image
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy artifacts to S3
-        run: aws s3 cp --recursive dist/ "s3://${{ env.BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
+        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
       - name: Set result
         if: ${{ always() }}
         id: result
-        # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
-        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+        # NOTE: using secrets in output make GitHub to skip output!
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${{ env.APP_SERVER }}/prs/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
       - name: Set test link
         if: ${{ always() }}
         id: test-link
-        # NOTE: cannot use secrets.AWS_BUCKET for bucket, it'll make GitHub to skip output!
-        run: echo "::set-output name=test-link::https://oit-test-bucket.s3.${{ env.REGION }}.amazonaws.com/prs/${{ github.event.number }}/${{ github.run_number }}/index.html"
+        # NOTE: using secrets in output make GitHub to skip output!
+        run: echo "::set-output name=test-link::${{ env.APP_SERVER }}/prs/${{ github.event.number }}/${{ github.run_number }}/index.html"
 
   commitlint:
     name: Run commitlint
