@@ -20,6 +20,10 @@ jobs:
         uses: pnpm/action-setup@v2.1.0
         with:
           version: latest
+      - name: Install bsdtar (and friends)
+        # Just because it so nicely handles multiple formats, including zip
+        run: |
+          sudo apt-get install -y libarchive-tools
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Get release version
@@ -30,7 +34,6 @@ jobs:
         run: pnpm run semantic-release:dry-run
       - name: Make sure .version.local exists
         run: |
-          ls -la
           test -f .version.local
           cat .version.local
       - name: Build
