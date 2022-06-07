@@ -1,3 +1,10 @@
+# [2.3.0-rc.3](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0-rc.2...v2.3.0-rc.3) (2022-06-07)
+
+
+### Bug Fixes
+
+* add missing little thing ([e795f43](https://github.com/symcode-fi/vue-tools-test/commit/e795f43ac346a8280a1adb8848e003c62e5c1bd1))
+
 # [2.3.0-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0-rc.1...v2.3.0-rc.2) (2022-06-07)
 
 
