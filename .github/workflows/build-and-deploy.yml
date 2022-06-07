@@ -1,17 +1,22 @@
-name: Release
+name: Build, release and deploy releases & rcs
 on:
   push:
     branches:
       - main
+      - next
 jobs:
   release:
-    name: Release
+    name: Build, release and deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          # Don't persist credentials or semantic-release will use them
+          # and fail with protected branches. For discussion and other
+          # possible solutions, see: https://github.com/semantic-release/git/issues/196.
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -39,7 +44,7 @@ jobs:
       - name: Build
         run: |
           echo "APP_VERSION=v$(cat .version.local)" >> .env.production.local
-          echo "APP_LINK=${{ github.server_url }}/${{ github.repository }}/releases/tag/v$(cat .version.local)" >> .env.production.local
+          echo "APP_LINK=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/v$(cat .version.local)" >> .env.production.local
           echo "APP_IS_RELEASE=true" >> .env.production.local
           cat .env.production.local
           pnpm run build
@@ -48,7 +53,7 @@ jobs:
           mkdir -p release.local
           bsdtar -acf release.local/oit-v$(cat .version.local).tar.gz -C dist .
           bsdtar -acf release.local/oit-v$(cat .version.local).zip -C dist .
-      - name: Release
+      - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm run semantic-release
@@ -61,8 +66,8 @@ jobs:
       # aws cli is available already in GH image
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
-      - name: Deploy artifacts to S3
-        # Add to "releases path" and to root
+      - name: Deploy to S3
+        # Add to "release or rc path" and to root
         run: |
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/release/v$(cat .version.local)/"
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)/v$(cat .version.local)/"
           aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/"
