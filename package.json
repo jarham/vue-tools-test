@@ -1,7 +1,7 @@
 {
   "name": "vue-tools-test",
   "private": true,
-  "version": "2.1.0-rc.1",
+  "version": "2.1.0",
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
