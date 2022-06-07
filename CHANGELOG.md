@@ -1,3 +1,24 @@
+# [2.3.0-rc.3](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0-rc.2...v2.3.0-rc.3) (2022-06-07)
+
+
+### Bug Fixes
+
+* add missing little thing ([e795f43](https://github.com/symcode-fi/vue-tools-test/commit/e795f43ac346a8280a1adb8848e003c62e5c1bd1))
+
+# [2.3.0-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0-rc.1...v2.3.0-rc.2) (2022-06-07)
+
+
+### Features
+
+* add another random number ([523958b](https://github.com/symcode-fi/vue-tools-test/commit/523958ba9bd52e336f3396e9d86a3f3697eccee1))
+
+# [2.3.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.2.0...v2.3.0-rc.1) (2022-06-07)
+
+
+### Features
+
+* add a random number ([7fa0396](https://github.com/symcode-fi/vue-tools-test/commit/7fa0396f893ee7524c21c7c8a9105345ede322bd))
+
 # [2.2.0](https://github.com/symcode-fi/vue-tools-test/compare/v2.1.0...v2.2.0) (2022-06-07)
 
 

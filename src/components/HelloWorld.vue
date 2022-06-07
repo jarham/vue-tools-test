@@ -6,6 +6,8 @@ const version = __APP_VERSION__;
 const appLink = __APP_LINK__;
 
 const count = ref(1);
+const random = ref(Math.random());
+const randomInt = ref(Math.floor(Math.random() * 101));
 </script>
 
 <template>
@@ -37,11 +39,14 @@ const count = ref(1);
   <p>Let's pretend this is a feature.</p>
   <p>Let's pretend this is another feature + a fix.</p>
   <p>This is a fake feature</p>
+  <p>This is a random feature: {{ random }}</p>
+  <p>This is another random feature: {{ randomInt }}</p>
   <p v-if="appLink">
     <a :href="appLink" target="_blank">App version: {{ version }}</a>
   </p>
   <p v-else>App version: {{ version }}</p>
   <p>App link: {{ appLink }}</p>
+  <small>A little thing</small>
 </template>
 
 <style scoped>
