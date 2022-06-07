@@ -1,3 +1,10 @@
+# [2.2.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.1.0...v2.2.0-rc.1) (2022-06-07)
+
+
+### Features
+
+* add one fake feature ([c5e6012](https://github.com/symcode-fi/vue-tools-test/commit/c5e6012117720411620b9cc53b11166973e28c83))
+
 # [2.0.0](https://github.com/jarham/vue-tools-test/compare/v1.0.2...v2.0.0) (2022-05-23)
 
 
