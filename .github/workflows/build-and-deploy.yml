@@ -1,8 +1,9 @@
-name: Release
+name: Build and deploy releases & rcs
 on:
   push:
     branches:
       - main
+      - next
 jobs:
   release:
     name: Release
@@ -48,7 +49,7 @@ jobs:
           mkdir -p release.local
           bsdtar -acf release.local/oit-v$(cat .version.local).tar.gz -C dist .
           bsdtar -acf release.local/oit-v$(cat .version.local).zip -C dist .
-      - name: Release
+      - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm run semantic-release
@@ -61,8 +62,8 @@ jobs:
       # aws cli is available already in GH image
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
-      - name: Deploy artifacts to S3
-        # Add to "releases path" and to root
+      - name: Deploy to S3
+        # Add to "release or rc path" and to root
         run: |
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/release/v$(cat .version.local)/"
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)/v$(cat .version.local)/"
           aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/"
