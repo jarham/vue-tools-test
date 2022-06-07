@@ -46,6 +46,7 @@ const randomInt = ref(Math.floor(Math.random() * 101));
   </p>
   <p v-else>App version: {{ version }}</p>
   <p>App link: {{ appLink }}</p>
+  <small>A little thing</small>
 </template>
 
 <style scoped>
