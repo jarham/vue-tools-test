@@ -1,3 +1,10 @@
+# [2.3.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.2.0...v2.3.0-rc.1) (2022-06-07)
+
+
+### Features
+
+* add a random number ([7fa0396](https://github.com/symcode-fi/vue-tools-test/commit/7fa0396f893ee7524c21c7c8a9105345ede322bd))
+
 # [2.2.0](https://github.com/symcode-fi/vue-tools-test/compare/v2.1.0...v2.2.0) (2022-06-07)
 
 
