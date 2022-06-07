@@ -1,8 +1,5 @@
 name: Pull Request
 on: [pull_request]
-  # NOTE: BUCKET_NAME and REGION get displayed publicly!
-  # But GitHub will not allow a secret to be used in job output
-  # so using env vars to make link to PR test app.
 env:
   APP_SERVER: https://d3bavttkp9gkki.cloudfront.net
 jobs:
@@ -68,17 +65,17 @@ jobs:
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy artifacts to S3
-        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/prs/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
+        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
       - name: Set result
         if: ${{ always() }}
         id: result
         # NOTE: using secrets in output make GitHub to skip output!
-        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${{ env.APP_SERVER }}/prs/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
       - name: Set test link
         if: ${{ always() }}
         id: test-link
         # NOTE: using secrets in output make GitHub to skip output!
-        run: echo "::set-output name=test-link::${{ env.APP_SERVER }}/prs/${{ github.event.number }}/${{ github.run_number }}/index.html"
+        run: echo "::set-output name=test-link::${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html"
 
   commitlint:
     name: Run commitlint
@@ -166,7 +163,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `\`🤖 Build Bot\` says: Great success! 🥳 Your pull request was built and has been deployed for testing: <${{ needs.deploy.outputs.test-link }}>
+              body: `Great success! 🥳 Your pull request was built and has been deployed for testing: <${{ needs.deploy.outputs.test-link }}>
             ${{ needs.commitlint.outputs.warn-many-commits }}
             **Job summary:**
 
@@ -175,7 +172,7 @@ jobs:
             ${{ needs.commitlint.outputs.result }}
             ${{ needs.eslint.outputs.result }}
 
-            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
 
   comment-failure:
@@ -196,7 +193,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `\`🤖 Build Bot\` says: Something went wrong with your PR's build job! 😭 See summary and build job link below 👇
+              body: `Something went wrong with your PR's build job! 😭 See summary and build job link below 👇
             ${{ needs.commitlint.outputs.warn-many-commits }}
             **Job summary:**
 
@@ -205,5 +202,5 @@ jobs:
             ${{ needs.commitlint.outputs.result }}
             ${{ needs.eslint.outputs.result }}
 
-            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
