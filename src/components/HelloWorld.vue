@@ -36,6 +36,7 @@ const count = ref(1);
   <p>Let's pretend this breaks it.</p>
   <p>Let's pretend this is a feature.</p>
   <p>Let's pretend this is another feature + a fix.</p>
+  <p>This is a fake feature</p>
   <p v-if="appLink">
     <a :href="appLink" target="_blank">App version: {{ version }}</a>
   </p>
