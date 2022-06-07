@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: |
           echo "APP_VERSION=v$(cat .version.local)" >> .env.production.local
-          echo "APP_LINK=${{ github.server_url }}/${{ github.repository }}/releases/tag/v$(cat .version.local)" >> .env.production.local
+          echo "APP_LINK=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/v$(cat .version.local)" >> .env.production.local
           echo "APP_IS_RELEASE=true" >> .env.production.local
           cat .env.production.local
           pnpm run build

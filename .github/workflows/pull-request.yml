@@ -172,7 +172,7 @@ jobs:
             ${{ needs.commitlint.outputs.result }}
             ${{ needs.eslint.outputs.result }}
 
-            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
 
   comment-failure:
@@ -202,5 +202,5 @@ jobs:
             ${{ needs.commitlint.outputs.result }}
             ${{ needs.eslint.outputs.result }}
 
-            Build job with artifacts is here: <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
+            Build job with artifacts is here: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}>`
             })
