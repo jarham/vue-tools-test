@@ -1,0 +1,9 @@
+# Set maintainers as default owner
+* @symcode-fi/maintainers
+
+# Source code is for devs
+/src/ @symcode-fi/devs
+
+# Admins must review changes inside /.github/
+# Keep this as the last rule as the last matching pattern decides the outcome!
+/.github/ @symcode-fi/admins
