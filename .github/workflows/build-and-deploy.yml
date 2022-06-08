@@ -35,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         # semantic-release:dry-run generates .version.local file
-        # See: .releaserc.yaml
+        # See .releaserc.yaml for semantic-release configuration
         run: pnpm run semantic-release:dry-run
       - name: Make sure .version.local exists
         run: |
@@ -43,17 +43,22 @@ jobs:
           cat .version.local
       - name: Build
         run: |
-          echo "APP_VERSION=v$(cat .version.local)" >> .env.production.local
-          echo "APP_LINK=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/v$(cat .version.local)" >> .env.production.local
+          REL_NAME="v$(cat .version.local)"
+          echo "APP_VERSION=${REL_NAME}" >> .env.production.local
+          echo "APP_LINK=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${REL_NAME}" >> .env.production.local
           echo "APP_IS_RELEASE=true" >> .env.production.local
           cat .env.production.local
           pnpm run build
       - name: Package
+        # semantic-release in next step will upload everything in
+        # release.local directory as release assets. See: .releaserc.yaml
         run: |
           mkdir -p release.local
-          bsdtar -acf release.local/oit-v$(cat .version.local).tar.gz -C dist .
-          bsdtar -acf release.local/oit-v$(cat .version.local).zip -C dist .
+          REL_NAME="v$(cat .version.local)"
+          bsdtar -acf "release.local/oit-${REL_NAME}.tar.gz" -C dist .
+          bsdtar -acf "release.local/oit-${REL_NAME}.zip" -C dist .
       - name: Semantic release
+        # See .releaserc.yaml for semantic-release configuration
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm run semantic-release
@@ -73,7 +78,40 @@ jobs:
         # you'll EASILY DELETE EVERYTHING ELSE except new files.
         run: |
           DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${DPATH}/v$(cat .version.local)/"
+          REL_NAME="v$(cat .version.local)"
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${DPATH}/${REL_NAME}/"
           if [ "${GITHUB_REF_NAME}" == "main" ]; then
             aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
           fi
+      - name: Edit Github release
+        # Tried to figure how to add a custom piece of text to release note
+        # to add links to the app but failed. Editing the release body text
+        # instead.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_USER: ${{ secrets.GH_USER }}
+        run: |
+          DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
+          REL_NAME="v$(cat .version.local)"
+
+          # https://docs.github.com/en/rest/releases/releases#list-releases
+          # List releases doesn't mention anything about sort order. Get 100
+          # and hope this one is on the list.
+          curl -s \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            | jq -r "[.[] | select(.tag_name == \"${REL_NAME}\")][0]" > release.local/current.json
+          REL_ID=$(jq -r .id release.local/current.json)
+          REL_BODY=$(jq -r .body release.local/current.json)
+
+          LATEST="Latest release can always be found here: <${APP_SERVER}/latest>"
+          CURRENT="This release (${REL_NAME}) can be found here: <${APP_SERVER}/${DPATH}/${REL_NAME}>"
+          REL_BODY=$(echo "${REL_BODY}" | sed -e "3i ${LATEST}\n${CURRENT}" | jq -Rsa .)
+
+          # https://docs.github.com/en/rest/releases/releases#update-a-release
+          curl \
+            -u "${GITHUB_USER}:${GITHUB_TOKEN}" \
+            -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/${REL_ID}" \
+            -d "{\"body\":${REL_BODY}}"
