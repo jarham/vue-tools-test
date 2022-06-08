@@ -1,3 +1,10 @@
+## [3.0.1-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v3.0.1-rc.1...v3.0.1-rc.2) (2022-06-08)
+
+
+### Bug Fixes
+
+* add missing anchor tag for app link ([c724cfc](https://github.com/symcode-fi/vue-tools-test/commit/c724cfc9df9d6159065a6e937fff12c88b81b57c))
+
 ## [3.0.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v3.0.0...v3.0.1-rc.1) (2022-06-08)
 
 
