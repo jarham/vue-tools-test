@@ -67,7 +67,13 @@ jobs:
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy to S3
-        # Add to "release or rc path" and to root
+        # Always deploy to "release or rc path". Deploy releases to latest too.
+        # Use sync with --delete to deploy latest. It'll delete old unused files.
+        # BE CAREFUL WITH SYNC + --delete option! Don't target it to S3 root because
+        # you'll EASILY DELETE EVERYTHING ELSE except new files.
         run: |
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)/v$(cat .version.local)/"
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/"
+          DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
+          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${DPATH}/v$(cat .version.local)/"
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then
+            aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
+          fi
