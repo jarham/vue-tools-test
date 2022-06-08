@@ -106,7 +106,7 @@ jobs:
       - name: Set result
         if: ${{ always() }}
         id: result
-        run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 🧐" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 😠"'
+        run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 👍" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 🧐"'
       - name: Set many commits warning
         if: ${{ always() }}
         id: warn-many-commits
@@ -147,7 +147,7 @@ jobs:
       - name: Set result
         if: ${{ always() }}
         id: result
-        run: 'test -f eslint-ok && echo "::set-output name=result::- **✔️ eslint**: Success 🧐" || echo "::set-output name=result::- **🛑 eslint**: FAILED 😠"'
+        run: 'test -f eslint-ok && echo "::set-output name=result::- **✔️ eslint**: Success 👍" || echo "::set-output name=result::- **🛑 eslint**: FAILED 🧐"'
 
   comment-success:
     name: Leave a comment on success
