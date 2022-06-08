@@ -42,6 +42,7 @@ const randomInt = ref(Math.floor(Math.random() * 101));
   <p>This is a random feature: {{ random }}</p>
   <p>This is another random feature: {{ randomInt }}</p>
   <p>Checking what a feature does on rc.</p>
+  <button class="btn-major">This is a major button that breaks things!</button>
   <p v-if="appLink">
     <a :href="appLink" target="_blank">App version: {{ version }}</a>
   </p>
@@ -65,5 +66,9 @@ code {
   padding: 2px 4px;
   border-radius: 4px;
   color: #304455;
+}
+
+.btn-major {
+  font-size: 5rem;
 }
 </style>
