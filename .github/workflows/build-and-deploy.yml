@@ -4,6 +4,10 @@ on:
     branches:
       - main
       - next
+env:
+  # The server is used in public Github release
+  # notes so it's fine to have it here.
+  APP_SERVER: https://d1v3xua7npgx27.cloudfront.net
 jobs:
   release:
     name: Build, release and deploy
