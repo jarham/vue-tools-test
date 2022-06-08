@@ -1,3 +1,10 @@
+## [3.0.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v3.0.0...v3.0.1-rc.1) (2022-06-08)
+
+
+### Bug Fixes
+
+* change app link to Github link ([91b21f0](https://github.com/symcode-fi/vue-tools-test/commit/91b21f0236f37bebbc8dbb025500a9aa50672d30))
+
 # [3.0.0](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0...v3.0.0) (2022-06-08)
 
 
