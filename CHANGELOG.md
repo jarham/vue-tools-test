@@ -1,3 +1,15 @@
+# [3.0.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.4.0-rc.1...v3.0.0-rc.1) (2022-06-08)
+
+
+### Features
+
+* add a major button ([66ca86c](https://github.com/symcode-fi/vue-tools-test/commit/66ca86c8ab846f615aa3e3857ec1d521b74fd87c))
+
+
+### BREAKING CHANGES
+
+* Major button breaks the layout.
+
 # [2.4.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.1-rc.1...v2.4.0-rc.1) (2022-06-08)
 
 
