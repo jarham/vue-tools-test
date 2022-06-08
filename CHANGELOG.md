@@ -1,3 +1,10 @@
+# [2.4.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.1-rc.1...v2.4.0-rc.1) (2022-06-08)
+
+
+### Features
+
+* check how it works on next ([fae90d7](https://github.com/symcode-fi/vue-tools-test/commit/fae90d79bee3154912612fb71318ef43e911e4ea))
+
 ## [2.3.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v2.3.0...v2.3.1-rc.1) (2022-06-07)
 
 
