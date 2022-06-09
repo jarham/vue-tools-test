@@ -118,9 +118,9 @@ jobs:
           REL_ID=$(jq -r .id release.local/current.json)
           REL_BODY=$(jq -r .body release.local/current.json)
 
-          LATEST="Latest release can always be found here: <${APP_SERVER}/latest>"
-          CURRENT="This release (${REL_NAME}) can be found here: <${APP_SERVER}/${DPATH}/${REL_NAME}>"
-          REL_BODY=$(echo "${REL_BODY}" | sed -e "3i ${LATEST}\n${CURRENT}" | jq -Rsa .)
+          LATEST="**The latest release** can always be found here: <${APP_SERVER}/latest/>"
+          CURRENT="**This release** (${REL_NAME}) can be found here: <${APP_SERVER}/${DPATH}/${REL_NAME}/>"
+          REL_BODY=$(echo "${REL_BODY}" | sed -e "3i ${CURRENT}\n\n${LATEST}" | jq -Rsa .)
 
           # https://docs.github.com/en/rest/releases/releases#update-a-release
           curl \
