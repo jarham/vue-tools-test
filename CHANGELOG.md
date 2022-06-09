@@ -1,3 +1,10 @@
+## [3.0.1-rc.3](https://github.com/symcode-fi/vue-tools-test/compare/v3.0.1-rc.2...v3.0.1-rc.3) (2022-06-09)
+
+
+### Bug Fixes
+
+* make a fix to trigger release ([2bcd466](https://github.com/symcode-fi/vue-tools-test/commit/2bcd4661c6e220edbbb022d26ecf313fb30f0147))
+
 ## [3.0.1-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v3.0.1-rc.1...v3.0.1-rc.2) (2022-06-08)
 
 
