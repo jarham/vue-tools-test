@@ -102,7 +102,7 @@ jobs:
         run: pnpm run semantic-release
       - name: Push next on par with main
         # Only if main branch was the trigger, ie. a release was made
-        if: ${{ github.ref_name === 'main' }}
+        if: ${{ github.ref_name == 'main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         run: |
