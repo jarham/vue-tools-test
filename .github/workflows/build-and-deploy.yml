@@ -72,10 +72,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         run: |
-          git log -3
+          # Log few commits to help with debugging in case something goes wrong
+          git log --decorate=short -10
           # Insert token to REPO_URL
           REPO_URL="${GITHUB_SERVER_URL/:\/\//:\/\/$GITHUB_TOKEN@}/${GITHUB_REPOSITORY}.git"
-          git push "${REPO_URL}" main:next || git push -f "${REPO_URL}" main:next
+          git push "${REPO_URL}" HEAD:next || git push -f "${REPO_URL}" HEAD:next
       - name: Configure AWS credentials for S3 deployment
         uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
