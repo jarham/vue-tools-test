@@ -113,7 +113,7 @@ jobs:
           # and hope this one is on the list.
           curl -s \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             | jq -r "[.[] | select(.tag_name == \"${REL_NAME}\")][0]" > release.local/current.json
           REL_ID=$(jq -r .id release.local/current.json)
           REL_BODY=$(jq -r .body release.local/current.json)
@@ -127,5 +127,5 @@ jobs:
             -u "${GITHUB_USER}:${GITHUB_TOKEN}" \
             -X PATCH \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/${REL_ID}" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${REL_ID}" \
             -d "{\"body\":${REL_BODY}}"
