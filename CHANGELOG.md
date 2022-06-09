@@ -1,3 +1,10 @@
+# [3.2.0](https://github.com/symcode-fi/vue-tools-test/compare/v3.1.0...v3.2.0) (2022-06-09)
+
+
+### Features
+
+* add another small feature ([79babc1](https://github.com/symcode-fi/vue-tools-test/commit/79babc15dcaeb886bdc5ae2f5a5eaa340a19c44a))
+
 # [3.2.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v3.1.0...v3.2.0-rc.1) (2022-06-09)
 
 
