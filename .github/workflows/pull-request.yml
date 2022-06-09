@@ -20,31 +20,31 @@ jobs:
           echo "---"
           echo "env context in PR trigger:"
           echo "=========================="
-          echo "${{ toJSON(env) }}"
+          echo '${{ toJSON(env) }}'
           echo "---"
           echo "github context in PR trigger:"
           echo "============================="
-          echo "${{ toJSON(github) }}"
+          echo '${{ toJSON(github) }}'
           echo "---"
           echo "job context in PR trigger:"
           echo "=========================="
-          echo "${{ toJSON(job) }}"
+          echo '${{ toJSON(job) }}'
           echo "---"
           echo "steps context in PR trigger:"
           echo "==========================="
-          echo "${{ toJSON(steps) }}"
+          echo '${{ toJSON(steps) }}'
           echo "---"
           echo "runner context in PR trigger:"
           echo "============================="
-          echo "${{ toJSON(runner) }}"
+          echo '${{ toJSON(runner) }}'
           echo "---"
           echo "strategy context in PR trigger:"
           echo "==============================="
-          echo "${{ toJSON(strategy) }}"
+          echo '${{ toJSON(strategy) }}'
           echo "---"
           echo "matrix context in PR trigger:"
           echo "============================="
-          echo "${{ toJSON(matrix) }}"
+          echo '${{ toJSON(matrix) }}'
           echo "---"
       - name: Checkout
         uses: actions/checkout@v3
