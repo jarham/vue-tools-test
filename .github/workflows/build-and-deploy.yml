@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Get release version
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         # semantic-release:dry-run generates .version.local file
         # See .releaserc.yaml for semantic-release configuration
         run: pnpm run semantic-release:dry-run
@@ -64,13 +64,13 @@ jobs:
       - name: Semantic release
         # See .releaserc.yaml for semantic-release configuration
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         run: pnpm run semantic-release
       - name: Push next on par with main
         # Only if main branch was the trigger, ie. a release was made
         if: ${{ github.ref_name === 'main' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         run: |
           git log -3
           # Insert token to REPO_URL
@@ -102,8 +102,8 @@ jobs:
         # to add links to the app but failed. Editing the release body text
         # instead.
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_USER: ${{ secrets.GH_USER }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
+          GITHUB_USER: ${{ secrets.GH_USER_RELEASE_BOT }}
         run: |
           DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
           REL_NAME="v$(cat .version.local)"

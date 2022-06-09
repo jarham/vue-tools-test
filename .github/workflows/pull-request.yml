@@ -157,7 +157,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
@@ -187,7 +187,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
