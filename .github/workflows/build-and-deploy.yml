@@ -13,40 +13,6 @@ jobs:
     name: Build, release and deploy
     runs-on: ubuntu-latest
     steps:
-      - name: DEBUG
-        run: |
-          echo "env in branch trigger:"
-          echo "======================"
-          env | sort
-          echo "---"
-          echo "env context in branch trigger:"
-          echo "=============================="
-          echo '${{ toJSON(env) }}'
-          echo "---"
-          echo "github context in branch trigger:"
-          echo "================================="
-          echo '${{ toJSON(github) }}'
-          echo "---"
-          echo "job context in branch trigger:"
-          echo "=============================="
-          echo '${{ toJSON(job) }}'
-          echo "---"
-          echo "steps context in branch trigger:"
-          echo "==============================="
-          echo '${{ toJSON(steps) }}'
-          echo "---"
-          echo "runner context in branch trigger:"
-          echo "================================="
-          echo '${{ toJSON(runner) }}'
-          echo "---"
-          echo "strategy context in branch trigger:"
-          echo "==================================="
-          echo '${{ toJSON(strategy) }}'
-          echo "---"
-          echo "matrix context in branch trigger:"
-          echo "================================="
-          echo '${{ toJSON(matrix) }}'
-          echo "---"
       - name: Checkout
         uses: actions/checkout@v3
         with:
