@@ -47,8 +47,10 @@ const randomInt = ref(Math.floor(Math.random() * 101));
     <a :href="appLink" target="_blank">App version: {{ version }}</a>
   </p>
   <p v-else>App version: {{ version }}</p>
-  <p>App link: {{ appLink }}</p>
-  <small>A little fixed thing</small>
+  <p>
+    Github link: <a :href="appLink || '#'">{{ appLink || "#" }}</a>
+  </p>
+  <small>A little fixed thing.</small>
 </template>
 
 <style scoped>

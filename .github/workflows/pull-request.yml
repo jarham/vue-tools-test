@@ -1,7 +1,10 @@
 name: Pull Request
 on: [pull_request]
 env:
-  APP_SERVER: https://d3bavttkp9gkki.cloudfront.net
+  # NOTE: APP_SERVER is used as output in few steps so it cannot be
+  # secret (Github would fail to output). As the server is also
+  # used in public github comments it's fine to have it here.
+  APP_SERVER: https://d1v3xua7npgx27.cloudfront.net
 jobs:
   build:
     name: Build
@@ -9,6 +12,40 @@ jobs:
     outputs:
       result: ${{ steps.result.outputs.result }}
     steps:
+      - name: DEBUG
+        run: |
+          echo "env in PR trigger:"
+          echo "=================="
+          env | sort
+          echo "---"
+          echo "env context in PR trigger:"
+          echo "=========================="
+          echo '${{ toJSON(env) }}'
+          echo "---"
+          echo "github context in PR trigger:"
+          echo "============================="
+          echo '${{ toJSON(github) }}'
+          echo "---"
+          echo "job context in PR trigger:"
+          echo "=========================="
+          echo '${{ toJSON(job) }}'
+          echo "---"
+          echo "steps context in PR trigger:"
+          echo "==========================="
+          echo '${{ toJSON(steps) }}'
+          echo "---"
+          echo "runner context in PR trigger:"
+          echo "============================="
+          echo '${{ toJSON(runner) }}'
+          echo "---"
+          echo "strategy context in PR trigger:"
+          echo "==============================="
+          echo '${{ toJSON(strategy) }}'
+          echo "---"
+          echo "matrix context in PR trigger:"
+          echo "============================="
+          echo '${{ toJSON(matrix) }}'
+          echo "---"
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install pnpm
@@ -103,7 +140,7 @@ jobs:
       - name: Set result
         if: ${{ always() }}
         id: result
-        run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 🧐" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 😠"'
+        run: 'test -f commits-ok && echo "::set-output name=result::- **✔️ commitlint**: Success 👍" || echo "::set-output name=result::- **🛑 commitlint**: FAILED 🧐"'
       - name: Set many commits warning
         if: ${{ always() }}
         id: warn-many-commits
@@ -144,7 +181,7 @@ jobs:
       - name: Set result
         if: ${{ always() }}
         id: result
-        run: 'test -f eslint-ok && echo "::set-output name=result::- **✔️ eslint**: Success 🧐" || echo "::set-output name=result::- **🛑 eslint**: FAILED 😠"'
+        run: 'test -f eslint-ok && echo "::set-output name=result::- **✔️ eslint**: Success 👍" || echo "::set-output name=result::- **🛑 eslint**: FAILED 🧐"'
 
   comment-success:
     name: Leave a comment on success
@@ -154,7 +191,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
@@ -184,7 +221,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
