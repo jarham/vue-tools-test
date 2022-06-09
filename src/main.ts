@@ -7,3 +7,4 @@ console.log("seq 2");
 console.log("seq 3");
 console.log("seq 4");
 console.log("seq 5");
+console.log("seq 6");
