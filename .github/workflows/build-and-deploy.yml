@@ -66,6 +66,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: pnpm run semantic-release
+      - name: Push next on par with main
+        # Only if main branch was the trigger, ie. a release was made
+        if: ${{ github.ref_name === 'main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git log -3
+          # Insert token to REPO_URL
+          REPO_URL="${GITHUB_SERVER_URL/:\/\//:\/\/$GITHUB_TOKEN@}/${GITHUB_REPOSITORY}.git"
+          git push "${REPO_URL}" main:next || git push -f "${REPO_URL}" main:next
       - name: Configure AWS credentials for S3 deployment
         uses: aws-actions/configure-aws-credentials@v1
         with:
