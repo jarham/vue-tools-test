@@ -12,61 +12,30 @@ jobs:
     outputs:
       result: ${{ steps.result.outputs.result }}
     steps:
-      - name: DEBUG
-        run: |
-          echo "env in PR trigger:"
-          echo "=================="
-          env | sort
-          echo "---"
-          echo "env context in PR trigger:"
-          echo "=========================="
-          echo '${{ toJSON(env) }}'
-          echo "---"
-          echo "github context in PR trigger:"
-          echo "============================="
-          echo '${{ toJSON(github) }}'
-          echo "---"
-          echo "job context in PR trigger:"
-          echo "=========================="
-          echo '${{ toJSON(job) }}'
-          echo "---"
-          echo "steps context in PR trigger:"
-          echo "==========================="
-          echo '${{ toJSON(steps) }}'
-          echo "---"
-          echo "runner context in PR trigger:"
-          echo "============================="
-          echo '${{ toJSON(runner) }}'
-          echo "---"
-          echo "strategy context in PR trigger:"
-          echo "==============================="
-          echo '${{ toJSON(strategy) }}'
-          echo "---"
-          echo "matrix context in PR trigger:"
-          echo "============================="
-          echo '${{ toJSON(matrix) }}'
-          echo "---"
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.1.0
+        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d
         with:
           version: latest
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd
         with:
           node-version: lts/*
           cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
+        env:
+          PR_NUM: ${{ github.event.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          echo "APP_VERSION=v$(jq -r .version package.json)-pr-${{ github.event.number }}-build-${{ github.run_number }}-preview" >> .env.production.local
-          echo "APP_LINK=${{ github.event.pull_request.html_url }}" >> .env.production.local
+          echo "APP_VERSION=v$(jq -r .version package.json)-pr-${PR_NUM}-build-${GITHUB_RUN_NUMBER}-preview" >> .env.production.local
+          echo "APP_LINK=${PR_URL}" >> .env.production.local
           cat .env.production.local
           pnpm run build && touch build-ok
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
         with:
           name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: |
@@ -88,12 +57,12 @@ jobs:
     steps:
       - name: Get build artifact
         id: build-and-deploy
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
         with:
           name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: dist
       - name: Configure AWS credentials for S3 deployment
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -102,17 +71,23 @@ jobs:
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy artifacts to S3
-        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
+        env:
+          PR_NUM: ${{ github.event.number }}
+        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/" && touch deploy-ok
       - name: Set result
         if: ${{ always() }}
         id: result
+        env:
+          PR_NUM: ${{ github.event.number }}
         # NOTE: using secrets in output make GitHub to skip output!
-        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${APP_SERVER}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
       - name: Set test link
         if: ${{ always() }}
         id: test-link
+        env:
+          PR_NUM: ${{ github.event.number }}
         # NOTE: using secrets in output make GitHub to skip output!
-        run: echo "::set-output name=test-link::${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html"
+        run: echo "::set-output name=test-link::${APP_SERVER}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/index.html"
 
   commitlint:
     name: Run commitlint
@@ -122,16 +97,16 @@ jobs:
       warn-many-commits: ${{ steps.warn-many-commits.outputs.warn-many-commits }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
         with:
           fetch-depth: 0
       - name: Run commitlint
-        uses: wagoid/commitlint-github-action@v4
+        uses: wagoid/commitlint-github-action@d608cb14eff8344e2ecf456e89f03f5c172884b3
         with:
           configFile: .commitlintrc.yaml
       - name: Fail if too many commits
         if: ${{ github.event.pull_request.commits > 30 }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
         with:
           script: |
             core.setFailed('You have ${{ github.event.pull_request.commits }} commits in your PR! Hard limit is 30.')
@@ -146,10 +121,12 @@ jobs:
         id: warn-many-commits
         # NOTE: Multiline strings get "truncated" to only the first line. Newlines must be escaped as %0A.
         # See: https://github.community/t/set-output-truncates-multiline-strings/16852/3
+        env:
+          N: ${{ github.event.pull_request.commits }}
         run: |
-          N=${{ github.event.pull_request.commits }}; if [[ $N -gt 30 ]]; then \
+          if [[ "${N}" -gt 30 ]]; then \
             echo "::set-output name=warn-many-commits::%0A**🛑 ERROR: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check will fail! 🛑**%0A"; \
-          elif [[ $N -ge 20 ]]; then \
+          elif [[ "${N}" -ge 20 ]]; then \
            echo "::set-output name=warn-many-commits::%0A**⚠️ WARNING: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check starts failing after that count! ⚠️**%0A"; \
           else echo "::set-output name=warn-many-commits::"; fi
 
@@ -164,13 +141,13 @@ jobs:
       result: ${{ steps.result.outputs.result }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.1.0
+        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d
         with:
           version: latest
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd
         with:
           node-version: lts/*
           cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
@@ -189,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Leave a comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
         with:
           github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
@@ -219,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Leave a comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
         with:
           github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
