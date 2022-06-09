@@ -50,7 +50,8 @@ const randomInt = ref(Math.floor(Math.random() * 101));
   <p>
     Github link: <a :href="appLink || '#'">{{ appLink || "#" }}</a>
   </p>
-  <small>A little fixed thing.</small>
+  <p><small>A little fixed thing.</small></p>
+  <p><small class="really-small">This is a really small feature.</small></p>
 </template>
 
 <style scoped>
@@ -72,5 +73,9 @@ code {
 
 .btn-major {
   font-size: 5rem;
+}
+
+.really-small {
+  font-size: 33%;
 }
 </style>
