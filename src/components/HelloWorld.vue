@@ -50,7 +50,7 @@ const randomInt = ref(Math.floor(Math.random() * 101));
   <p>
     Github link: <a :href="appLink || '#'">{{ appLink || "#" }}</a>
   </p>
-  <small>A little fixed thing</small>
+  <small>A little fixed thing.</small>
 </template>
 
 <style scoped>

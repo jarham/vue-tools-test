@@ -12,6 +12,40 @@ jobs:
     outputs:
       result: ${{ steps.result.outputs.result }}
     steps:
+      - name: DEBUG
+        run: |
+          echo "env in PR trigger:"
+          echo "=================="
+          env | sort
+          echo "---"
+          echo "env context in PR trigger:"
+          echo "=========================="
+          echo "${{ toJSON(env) }}"
+          echo "---"
+          echo "github context in PR trigger:"
+          echo "============================="
+          echo "${{ toJSON(github) }}"
+          echo "---"
+          echo "job context in PR trigger:"
+          echo "=========================="
+          echo "${{ toJSON(job) }}"
+          echo "---"
+          echo "steps context in PR trigger:"
+          echo "==========================="
+          echo "${{ toJSON(steps) }}"
+          echo "---"
+          echo "runner context in PR trigger:"
+          echo "============================="
+          echo "${{ toJSON(runner) }}"
+          echo "---"
+          echo "strategy context in PR trigger:"
+          echo "==============================="
+          echo "${{ toJSON(strategy) }}"
+          echo "---"
+          echo "matrix context in PR trigger:"
+          echo "============================="
+          echo "${{ toJSON(matrix) }}"
+          echo "---"
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install pnpm
@@ -157,7 +191,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor
@@ -187,7 +221,7 @@ jobs:
       - name: Leave a comment
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GH_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
           # See: https://github.com/actions/github-script/issues/247#issuecomment-1079839739
           # and: https://github.com/actions/github-script#welcome-a-first-time-contributor

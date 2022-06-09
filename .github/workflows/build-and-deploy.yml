@@ -13,6 +13,40 @@ jobs:
     name: Build, release and deploy
     runs-on: ubuntu-latest
     steps:
+      - name: DEBUG
+        run: |
+          echo "env in branch trigger:"
+          echo "======================"
+          env | sort
+          echo "---"
+          echo "env context in branch trigger:"
+          echo "=============================="
+          echo "${{ toJSON(env) }}"
+          echo "---"
+          echo "github context in branch trigger:"
+          echo "================================="
+          echo "${{ toJSON(github) }}"
+          echo "---"
+          echo "job context in branch trigger:"
+          echo "=============================="
+          echo "${{ toJSON(job) }}"
+          echo "---"
+          echo "steps context in branch trigger:"
+          echo "==============================="
+          echo "${{ toJSON(steps) }}"
+          echo "---"
+          echo "runner context in branch trigger:"
+          echo "================================="
+          echo "${{ toJSON(runner) }}"
+          echo "---"
+          echo "strategy context in branch trigger:"
+          echo "==================================="
+          echo "${{ toJSON(strategy) }}"
+          echo "---"
+          echo "matrix context in branch trigger:"
+          echo "================================="
+          echo "${{ toJSON(matrix) }}"
+          echo "---"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -37,7 +71,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Get release version
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         # semantic-release:dry-run generates .version.local file
         # See .releaserc.yaml for semantic-release configuration
         run: pnpm run semantic-release:dry-run
@@ -64,8 +98,18 @@ jobs:
       - name: Semantic release
         # See .releaserc.yaml for semantic-release configuration
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
         run: pnpm run semantic-release
+      - name: Push next on par with main
+        # Only if main branch was the trigger, ie. a release was made
+        if: ${{ github.ref_name === 'main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
+        run: |
+          git log -3
+          # Insert token to REPO_URL
+          REPO_URL="${GITHUB_SERVER_URL/:\/\//:\/\/$GITHUB_TOKEN@}/${GITHUB_REPOSITORY}.git"
+          git push "${REPO_URL}" main:next || git push -f "${REPO_URL}" main:next
       - name: Configure AWS credentials for S3 deployment
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -92,8 +136,8 @@ jobs:
         # to add links to the app but failed. Editing the release body text
         # instead.
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_USER: ${{ secrets.GH_USER }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
+          GITHUB_USER: ${{ secrets.GH_USER_RELEASE_BOT }}
         run: |
           DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
           REL_NAME="v$(cat .version.local)"
@@ -103,7 +147,7 @@ jobs:
           # and hope this one is on the list.
           curl -s \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             | jq -r "[.[] | select(.tag_name == \"${REL_NAME}\")][0]" > release.local/current.json
           REL_ID=$(jq -r .id release.local/current.json)
           REL_BODY=$(jq -r .body release.local/current.json)
@@ -117,5 +161,5 @@ jobs:
             -u "${GITHUB_USER}:${GITHUB_TOKEN}" \
             -X PATCH \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/${REL_ID}" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/releases/${REL_ID}" \
             -d "{\"body\":${REL_BODY}}"
