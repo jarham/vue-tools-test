@@ -26,9 +26,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build
+        env:
+          PR_NUM: ${{ github.event.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          echo "APP_VERSION=v$(jq -r .version package.json)-pr-${{ github.event.number }}-build-${{ github.run_number }}-preview" >> .env.production.local
-          echo "APP_LINK=${{ github.event.pull_request.html_url }}" >> .env.production.local
+          echo "APP_VERSION=v$(jq -r .version package.json)-pr-${PR_NUM}-build-${GITHUB_RUN_NUMBER}-preview" >> .env.production.local
+          echo "APP_LINK=${PR_URL}" >> .env.production.local
           cat .env.production.local
           pnpm run build && touch build-ok
       - name: Archive build artifacts
@@ -68,17 +71,23 @@ jobs:
       # see: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-software
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy artifacts to S3
-        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${{ github.event.number }}/${{ github.run_number }}/" && touch deploy-ok
+        env:
+          PR_NUM: ${{ github.event.number }}
+        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/" && touch deploy-ok
       - name: Set result
         if: ${{ always() }}
         id: result
+        env:
+          PR_NUM: ${{ github.event.number }}
         # NOTE: using secrets in output make GitHub to skip output!
-        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
+        run: 'test -f deploy-ok && echo "::set-output name=result::- **✔️ Deployment**: Success 🚀 Test it here: <${APP_SERVER}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/index.html>" || echo "::set-output name=result::- **🛑 Deployment**: FAILED 💔"'
       - name: Set test link
         if: ${{ always() }}
         id: test-link
+        env:
+          PR_NUM: ${{ github.event.number }}
         # NOTE: using secrets in output make GitHub to skip output!
-        run: echo "::set-output name=test-link::${{ env.APP_SERVER }}/pr/${{ github.event.number }}/${{ github.run_number }}/index.html"
+        run: echo "::set-output name=test-link::${APP_SERVER}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/index.html"
 
   commitlint:
     name: Run commitlint
@@ -112,10 +121,12 @@ jobs:
         id: warn-many-commits
         # NOTE: Multiline strings get "truncated" to only the first line. Newlines must be escaped as %0A.
         # See: https://github.community/t/set-output-truncates-multiline-strings/16852/3
+        env:
+          N: ${{ github.event.pull_request.commits }}
         run: |
-          N=${{ github.event.pull_request.commits }}; if [[ $N -gt 30 ]]; then \
+          if [[ "${N}" -gt 30 ]]; then \
             echo "::set-output name=warn-many-commits::%0A**🛑 ERROR: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check will fail! 🛑**%0A"; \
-          elif [[ $N -ge 20 ]]; then \
+          elif [[ "${N}" -ge 20 ]]; then \
            echo "::set-output name=warn-many-commits::%0A**⚠️ WARNING: You have ${N} commits in your PR. GitHub API and/or wagoid/commitlint-github-action seems to be limited to 30 commits / PR, so commitlint check starts failing after that count! ⚠️**%0A"; \
           else echo "::set-output name=warn-many-commits::"; fi
 
