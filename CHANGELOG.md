@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/symcode-fi/vue-tools-test/compare/v4.0.0...v4.0.1) (2022-06-10)
+
+
+### Bug Fixes
+
+* fix something ([049aad2](https://github.com/symcode-fi/vue-tools-test/commit/049aad26ec15ee7c6f6c6cbdec1c63277ac9d11a))
+
 ## [4.0.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v4.0.0...v4.0.1-rc.1) (2022-06-10)
 
 
