@@ -2,6 +2,8 @@
 
 Just testing ...
 
+Just updating README.
+
 # Tooling
 
 This project uses commitlint. If you're using VS Code you might what to
