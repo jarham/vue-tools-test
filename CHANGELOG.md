@@ -1,3 +1,13 @@
+# [4.0.0](https://github.com/symcode-fi/vue-tools-test/compare/v3.2.0...v4.0.0) (2022-06-10)
+
+
+* fix!: remove major button as it's only annoying ([51fa470](https://github.com/symcode-fi/vue-tools-test/commit/51fa47059cceac5ef98362d4bd4c993e4220f747))
+
+
+### BREAKING CHANGES
+
+* major button is no more
+
 # [4.0.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v3.2.0...v4.0.0-rc.1) (2022-06-10)
 
 
