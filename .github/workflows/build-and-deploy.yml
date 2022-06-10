@@ -47,10 +47,10 @@ jobs:
           # Make sure .version.local exists or fail
           test -f .version.local
           VERSION="$(cat .version.local)"
-          if [ -z "${VERSION}" ]; then echo "::set-output name=releasing::false"; else echo "::set-output name=releasing::true"; fi
+          if [ -z "${VERSION}" ]; then echo "::set-output name=new-version::false"; else echo "::set-output name=new-version::true"; fi
       - name: Build
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         run: |
           REL_NAME="v$(cat .version.local)"
           echo "APP_VERSION=${REL_NAME}" >> .env.production.local
@@ -60,7 +60,7 @@ jobs:
           pnpm run build
       - name: Package
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         # semantic-release in next step will upload everything in
         # release.local directory as release assets. See: .releaserc.yaml
         run: |
@@ -70,7 +70,7 @@ jobs:
           bsdtar -acf "release.local/oit-${REL_NAME}.zip" -C dist .
       - name: Semantic release
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         # See .releaserc.yaml for semantic-release configuration
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
@@ -88,7 +88,7 @@ jobs:
           git push "${REPO_URL}" HEAD:next || git push -f "${REPO_URL}" HEAD:next
       - name: Configure AWS credentials for S3 deployment
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -99,7 +99,7 @@ jobs:
       #      https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-Readme.md
       - name: Deploy to S3
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         # Always deploy to "release or rc path". Deploy releases to latest too.
         # Use sync with --delete to deploy latest. It'll delete old unused files.
         # BE CAREFUL WITH SYNC + --delete option! Don't target it to S3 root because
@@ -113,7 +113,7 @@ jobs:
           fi
       - name: Edit Github release
         # Run only if new version is made
-        if: ${{ steps.check-version.output == 'true' }}
+        if: ${{ steps.check-version.outputs.new-version == 'true' }}
         # Tried to figure how to add a custom piece of text to release note
         # to add links to the app but failed. Editing the release body text
         # instead.
