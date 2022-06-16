@@ -1,3 +1,10 @@
+# [4.2.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v4.1.0...v4.2.0-rc.1) (2022-06-16)
+
+
+### Features
+
+* add a feature, again ([05462c8](https://github.com/symcode-fi/vue-tools-test/commit/05462c8aaa9ebfc9a9b7f8d5adbdefab7f5d80f2))
+
 # [4.1.0](https://github.com/symcode-fi/vue-tools-test/compare/v4.0.1...v4.1.0) (2022-06-16)
 
 
