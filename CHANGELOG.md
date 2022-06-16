@@ -1,3 +1,11 @@
+# [4.1.0](https://github.com/symcode-fi/vue-tools-test/compare/v4.0.1...v4.1.0) (2022-06-16)
+
+
+### Features
+
+* add a small feature to test PR in GH ([13659da](https://github.com/symcode-fi/vue-tools-test/commit/13659da16c349f91b45fde8a043e9d6f63efde9c))
+* add a small feature to test PR in GH ([94482ee](https://github.com/symcode-fi/vue-tools-test/commit/94482ee37c6b12e10eeabbd95b6c2e094e67128d))
+
 # [4.1.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v4.0.1...v4.1.0-rc.1) (2022-06-15)
 
 
