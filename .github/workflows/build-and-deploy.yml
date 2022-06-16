@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # renovate: tag=v3
         with:
           fetch-depth: 0
           # Don't persist credentials or semantic-release will use them
@@ -22,11 +22,11 @@ jobs:
           # possible solutions, see: https://github.com/semantic-release/git/issues/196.
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd
+        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd # renovate: tag=v3
         with:
           node-version: lts/*
       - name: Install pnpm
-        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d
+        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d # renovate: tag=v2.2.2
         with:
           version: latest
       - name: Install bsdtar (and friends)
@@ -89,7 +89,7 @@ jobs:
       - name: Configure AWS credentials for S3 deployment
         # Run only if new version is made
         if: ${{ steps.check-version.outputs.new-version == 'true' }}
-        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2 # renovate: tag=v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

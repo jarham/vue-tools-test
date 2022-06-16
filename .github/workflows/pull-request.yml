@@ -13,13 +13,13 @@ jobs:
       result: ${{ steps.result.outputs.result }}
     steps:
       - name: Checkout
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # renovate: tag=v3
       - name: Install pnpm
-        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d
+        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d # renovate: tag=v2.2.2
         with:
           version: latest
       - name: Setup Node.js
-        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd
+        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd # renovate: tag=v3
         with:
           node-version: lts/*
           cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
@@ -35,7 +35,7 @@ jobs:
           cat .env.production.local
           pnpm run build && touch build-ok
       - name: Archive build artifacts
-        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8
+        uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # renovate: tag=v3
         with:
           name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: |
@@ -57,12 +57,12 @@ jobs:
     steps:
       - name: Get build artifact
         id: build-and-deploy
-        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741
+        uses: actions/download-artifact@fb598a63ae348fa914e94cd0ff38f362e927b741 # renovate: tag=v3
         with:
           name: online-inquiry-tool-pr-${{ github.event.number }}-build-${{ github.run_number }}
           path: dist
       - name: Configure AWS credentials for S3 deployment
-        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2
+        uses: aws-actions/configure-aws-credentials@05b148adc31e091bafbaf404f745055d4d3bc9d2 # renovate: tag=v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -97,16 +97,16 @@ jobs:
       warn-many-commits: ${{ steps.warn-many-commits.outputs.warn-many-commits }}
     steps:
       - name: Checkout
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # renovate: tag=v3
         with:
           fetch-depth: 0
       - name: Run commitlint
-        uses: wagoid/commitlint-github-action@d608cb14eff8344e2ecf456e89f03f5c172884b3
+        uses: wagoid/commitlint-github-action@d608cb14eff8344e2ecf456e89f03f5c172884b3 # renovate: tag=v4
         with:
           configFile: .commitlintrc.yaml
       - name: Fail if too many commits
         if: ${{ github.event.pull_request.commits > 30 }}
-        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da # renovate: tag=v6
         with:
           script: |
             core.setFailed('You have ${{ github.event.pull_request.commits }} commits in your PR! Hard limit is 30.')
@@ -141,13 +141,13 @@ jobs:
       result: ${{ steps.result.outputs.result }}
     steps:
       - name: Checkout
-        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # renovate: tag=v3
       - name: Install pnpm
-        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d
+        uses: pnpm/action-setup@10693b3829bf86eb2572aef5f3571dcf5ca9287d # renovate: tag=v2.2.2
         with:
           version: latest
       - name: Setup Node.js
-        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd
+        uses: actions/setup-node@eeb10cff27034e7acf239c5d29f62154018672fd # renovate: tag=v3
         with:
           node-version: lts/*
           cache: 'pnpm' # cache example form: https://pnpm.io/continuous-integration#github-actions
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Leave a comment
-        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da # renovate: tag=v6
         with:
           github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
@@ -196,7 +196,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Leave a comment
-        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da
+        uses: actions/github-script@7a5c598405937d486b0331594b5da2b14db670da # renovate: tag=v6
         with:
           github-token: ${{ secrets.GH_TOKEN_RELEASE_BOT }}
           # Note the indentation of body!
