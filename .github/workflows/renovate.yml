@@ -1,0 +1,21 @@
+name: Renovate
+on:
+  schedule:
+    - cron: 0/20 * * * *
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get token
+        id: get_token
+        uses: machine-learning-apps/actions-app-token@2d92b2a2bb7030dca3dd14975ae44799debed2e8 # no tag :(
+        with:
+          APP_PEM: ${{ secrets.APP_PEM }}
+          APP_ID: ${{ secrets.APP_ID }}
+      - name: Checkout
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # renovate: tag=v3
+      - name: Renovate
+        uses: renovatebot/github-action@1a23916296098cf63a0e9571f03d52cf14d00daa # renovate: tag=v32.88.0
+        with:
+          configurationFile: .github/renovate.json
+          token: 'x-access-token:${{ steps.get_token.outputs.app_token }}'
