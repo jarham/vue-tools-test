@@ -1,4 +1,5 @@
 name: Renovate
+on: workflow_dispatch
 # on:
 #   schedule:
 #     - cron: '*/15 * * * *'
