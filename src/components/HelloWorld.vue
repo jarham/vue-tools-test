@@ -54,6 +54,8 @@ const randomInt = ref(Math.floor(Math.random() * 101));
   <p><small class="really-small">Another small feature.</small></p>
   <p><small class="really-small">A small feature test.</small></p>
   <p><small class="really-small">A small feature test.</small></p>
+  <p><small class="really-small">A small feature test, again.</small></p>
+  <p><small class="really-small">A small feature test, again, again.</small></p>
 </template>
 
 <style scoped>
