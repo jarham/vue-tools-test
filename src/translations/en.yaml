@@ -1,0 +1,10 @@
+greeting: Greetings!
+fb-test: A Fallback test
+
+language:
+  en-AU: English (AU)
+  en-GB: English (GB)
+  en-US: English (US)
+  en: English
+  fi-savolax: Savo
+  fi: Suomi
