@@ -1,0 +1,9 @@
+greeting: Hello!
+
+# Languages are always read from en.yaml. No need to
+# add them to other translation files. Add languages
+# here keyed by their locales and set values to their
+# native names.
+language:
+  en: English
+  fi: Suomi

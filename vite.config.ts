@@ -1,30 +1,35 @@
-import { defineConfig, loadEnv } from "vite";
-import vue from "@vitejs/plugin-vue";
+import {defineConfig, loadEnv} from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueI18n from '@intlify/vite-plugin-vue-i18n';
+import yaml from '@rollup/plugin-yaml';
+import * as path from 'path';
+import * as fg from 'fast-glob';
+import {configFilter, translationFilter} from './tools/file-filters';
 
 function getAppVersion(env: Record<string, string>): string {
   // env.APP_VERSION is read from .env.production.local file
   // which is generated at release build time.
   if (env.APP_VERSION) return JSON.stringify(env.APP_VERSION);
-  if (env.NODE_ENV !== "production") {
+  if (env.NODE_ENV !== 'production') {
     return JSON.stringify(`v${env.npm_package_version}-development`);
   }
   return JSON.stringify(`v${env.npm_package_version}`);
 }
 
 function getAppLink(env: Record<string, string>): string {
-  if (env.NODE_ENV !== "production") {
+  if (env.NODE_ENV !== 'production') {
     return JSON.stringify(null);
   }
   return env.APP_LINK ? JSON.stringify(env.APP_LINK) : JSON.stringify(null);
 }
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+export default defineConfig(({mode}) => {
+  const env = loadEnv(mode, process.cwd(), '');
   // Use app version instead of generated hash in filenames
   // when building a release.
   const build =
-    env.APP_VERSION && env.APP_IS_RELEASE === "true"
+    env.APP_VERSION && env.APP_IS_RELEASE === 'true'
       ? {
           rollupOptions: {
             output: {
@@ -35,9 +40,21 @@ export default defineConfig(({ mode }) => {
           },
         }
       : undefined;
+
+  // vueI18n's `include` option uses `createFilter()` from @rollup/pluginutils
+  // which uses separate `include` and `exclude` options but vueI18n only
+  // hasn `include`. Use fast-glob to find actual translation files first.
+  const translationFiles = fg
+    .sync(translationFilter)
+    .map((f) => path.resolve(__dirname, f));
+
   return {
-    plugins: [vue()],
-    base: "",
+    plugins: [
+      vue(),
+      vueI18n({include: translationFiles}),
+      yaml({include: configFilter}),
+    ],
+    base: '',
     define: {
       __APP_VERSION__: getAppVersion(env),
       __APP_LINK__: getAppLink(env),

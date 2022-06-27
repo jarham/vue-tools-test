@@ -1,13 +1,26 @@
-<script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloWorld from "./components/HelloWorld.vue";
-</script>
-
-<template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+<template lang="pug">
+img(alt="Vue logo" src="./assets/logo.png")
+HelloWorld
 </template>
+
+<script setup lang="ts">
+import {watch} from 'vue';
+import {storeToRefs} from 'pinia';
+import {useI18n} from 'vue-i18n';
+import {useStore} from './store';
+import HelloWorld from './components/HelloWorld.vue';
+
+const store = useStore();
+const {locale} = useI18n();
+const {locale: storeLocale} = storeToRefs(store);
+watch(
+  storeLocale,
+  (l) => {
+    locale.value = l;
+  },
+  {immediate: true},
+);
+</script>
 
 <style>
 #app {

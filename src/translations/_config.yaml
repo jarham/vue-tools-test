@@ -1,0 +1,13 @@
+referenceLocale: en
+fallbackLocale:
+  fi-savolax:
+    - fi
+  en-AU:
+    - en-US
+    - en
+  en-US:
+    - en
+  en-GB:
+    - en
+fallbackWarn: false
+missingWarn: false
