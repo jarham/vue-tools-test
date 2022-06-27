@@ -1,3 +1,15 @@
+# [5.0.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v4.2.0...v5.0.0-rc.1) (2022-06-27)
+
+
+### Features
+
+* add translation check + translations ([0a3e5e9](https://github.com/symcode-fi/vue-tools-test/commit/0a3e5e975c1da6d3f867ddb9c9a0161ec18e3f4d))
+
+
+### BREAKING CHANGES
+
+* UI is rewritten
+
 # [4.2.0](https://github.com/symcode-fi/vue-tools-test/compare/v4.1.0...v4.2.0) (2022-06-17)
 
 
