@@ -1,6 +1,7 @@
 greeting: Greetings!
 fb-test: A Fallback test
 current-locale: 'Current language:'
+small-feat: Small feature
 
 language:
   en-AU: English (AU)
