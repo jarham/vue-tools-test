@@ -7,6 +7,8 @@
       v-for='l in store.locales'
       :value='l'
     ) {{ t(`language.${l}`, 0, {locale: store.referenceLocale}) }}
+  .current
+    small {{ t('current-locale') }} {{ t(`language.${store.locale}`, 0, {locale: store.referenceLocale}) }}
 h1 {{ t('greeting') }}
 h2 {{ t('fb-test') }}
 h3
