@@ -14,6 +14,8 @@ h2 {{ t('fb-test') }}
 h3
   a.link-secondary(v-if='appLink' :href='appLink') {{ version }}
   span.text-secondary(v-else) {{ version }}
+.feat
+  small {{ t('small-feat') }}
 </template>
 
 <script setup lang="ts">
