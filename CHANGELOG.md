@@ -1,3 +1,10 @@
+# [5.1.0](https://github.com/symcode-fi/vue-tools-test/compare/v5.0.0...v5.1.0) (2022-06-29)
+
+
+### Features
+
+* show current language ([173e1d5](https://github.com/symcode-fi/vue-tools-test/commit/173e1d584c553fc098a56b240822c70ce93c18a9))
+
 # [5.1.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.0.0...v5.1.0-rc.1) (2022-06-29)
 
 
