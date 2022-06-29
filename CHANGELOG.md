@@ -1,3 +1,10 @@
+# [5.2.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.1.0...v5.2.0-rc.1) (2022-06-29)
+
+
+### Features
+
+* add a small feature ([d1258a6](https://github.com/symcode-fi/vue-tools-test/commit/d1258a67e8fab520954bd674316da17fbfb2dd57))
+
 # [5.1.0](https://github.com/symcode-fi/vue-tools-test/compare/v5.0.0...v5.1.0) (2022-06-29)
 
 
