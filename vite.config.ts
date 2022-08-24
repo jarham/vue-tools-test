@@ -1,4 +1,4 @@
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig, loadEnv, Plugin} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueI18n from '@intlify/vite-plugin-vue-i18n';
 import yaml from '@rollup/plugin-yaml';
@@ -52,7 +52,7 @@ export default defineConfig(({mode}) => {
     plugins: [
       vue(),
       vueI18n({include: translationFiles}),
-      yaml({include: configFilter}),
+      yaml({include: configFilter}) as Plugin,
     ],
     base: '',
     define: {
