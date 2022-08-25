@@ -1,3 +1,10 @@
+## [5.2.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.2.0...v5.2.1) (2022-08-25)
+
+
+### Bug Fixes
+
+* add missing cache-control for released index.html ([b874c3d](https://github.com/symcode-fi/vue-tools-test/commit/b874c3d70e35d87d263510440bda000e9f05427c))
+
 ## [5.2.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.2.0...v5.2.1-rc.1) (2022-08-25)
 
 
