@@ -101,6 +101,7 @@ jobs:
         # Run only if new version is made
         if: ${{ steps.check-version.outputs.new-version == 'true' }}
         # Always deploy to "release or rc path". Deploy releases to latest too.
+        # index.html is copied with its own cache-control for release.
         # Use sync with --delete to deploy latest. It'll delete old unused files.
         # BE CAREFUL WITH SYNC + --delete option! Don't target it to S3 root because
         # you'll EASILY DELETE EVERYTHING ELSE except new files.
@@ -109,6 +110,7 @@ jobs:
           REL_NAME="v$(cat .version.local)"
           aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${DPATH}/${REL_NAME}/"
           if [ "${GITHUB_REF_NAME}" == "main" ]; then
+            aws s3 cp --cache-control max-age=600,s-maxage=300 dist/index.html "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
             aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
           fi
       - name: Edit Github release
