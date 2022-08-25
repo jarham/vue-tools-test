@@ -16,6 +16,7 @@ h3
   span.text-secondary(v-else) {{ version }}
 .feat
   small {{ t('small-feat') }}
+.feat {{ t('cache-control-test-feat') }}
 </template>
 
 <script setup lang="ts">
