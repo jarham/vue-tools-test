@@ -1,3 +1,10 @@
+# [5.3.0](https://github.com/symcode-fi/vue-tools-test/compare/v5.2.1...v5.3.0) (2022-08-25)
+
+
+### Features
+
+* add cache control test feature ([78c1c13](https://github.com/symcode-fi/vue-tools-test/commit/78c1c132901daa176b6fa004b7a938d70f37524f))
+
 # [5.3.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.2.1...v5.3.0-rc.1) (2022-08-25)
 
 
