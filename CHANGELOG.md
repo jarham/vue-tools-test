@@ -1,3 +1,11 @@
+## [5.3.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.3.0...v5.3.1) (2022-08-26)
+
+
+### Bug Fixes
+
+* keep previous release's assets in latest, if any ([d5ee0cf](https://github.com/symcode-fi/vue-tools-test/commit/d5ee0cf9062c68e620b23e1d963cface165e13b9))
+* test prev ver assets with patch .2 ([877b05f](https://github.com/symcode-fi/vue-tools-test/commit/877b05f7b4ec12f8bb18f033925f8723c1372d8b))
+
 ## [5.3.1-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v5.3.1-rc.1...v5.3.1-rc.2) (2022-08-26)
 
 
