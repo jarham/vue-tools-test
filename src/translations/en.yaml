@@ -3,6 +3,7 @@ fb-test: A Fallback test
 current-locale: 'Current language:'
 small-feat: Small feature
 cache-control-test-feat: Cache control test feature
+test-fix: Test fix {n}
 
 language:
   en-AU: English (AU)

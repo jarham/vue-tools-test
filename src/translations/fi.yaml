@@ -3,3 +3,4 @@ fb-test: Takaputoustesti
 current-locale: 'Valittu kieli:'
 small-feat: Pieni fiitseri
 cache-control-test-feat: Välimuistikontrollin testiominaisuus
+test-fix: Testi fixi {n}
