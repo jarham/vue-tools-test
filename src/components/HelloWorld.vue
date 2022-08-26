@@ -17,7 +17,7 @@ h3
 .feat
   small {{ t('small-feat') }}
 .feat {{ t('cache-control-test-feat') }}
-.fix.text-secondary {{ t('test-fix', {n: ".9 after skipped ones"}) }}
+.fix.text-secondary {{ t('test-fix', {n: ".10"}) }}
 </template>
 
 <script setup lang="ts">
