@@ -4,11 +4,13 @@ specifiers:
   '@commitlint/cli': ^17.0.3
   '@commitlint/config-conventional': ^17.0.3
   '@intlify/vite-plugin-vue-i18n': ^6.0.1
+  '@popperjs/core': ^2.11.6
   '@rollup/plugin-yaml': ^3.1.0
   '@semantic-release/changelog': ^6.0.1
   '@semantic-release/exec': ^6.0.3
   '@semantic-release/git': ^10.0.1
   '@types/flat': ^5.0.2
+  '@types/js-cookie': ^3.0.2
   '@types/mustache': ^4.2.1
   '@types/node': '16'
   '@types/yargs': ^17.0.11
@@ -17,6 +19,9 @@ specifiers:
   '@vitejs/plugin-vue': ^3.0.3
   '@vue/eslint-config-prettier': ^7.0.0
   '@vue/eslint-config-typescript': ^11.0.0
+  bootstrap: ^5.2.0
+  bootstrap-icons: ^1.9.1
+  bootswatch: ^5.2.0
   commitizen: ^4.2.5
   cz-conventional-changelog: 3.3.0
   eslint: ^8.22.0
@@ -26,6 +31,7 @@ specifiers:
   flat: ^5.0.2
   husky: ^8.0.1
   joi: ^17.6.0
+  js-cookie: ^3.0.1
   mustache: ^4.2.0
   pinia: ^2.0.20
   prettier: ^2.7.1
@@ -41,6 +47,11 @@ specifiers:
   yargs: ^17.5.1
 
 dependencies:
+  '@popperjs/core': 2.11.6
+  bootstrap: 5.2.0_@popperjs+core@2.11.6
+  bootstrap-icons: 1.9.1
+  bootswatch: 5.2.0
+  js-cookie: 3.0.1
   pinia: 2.0.20_j6bzmzd4ujpabbp5objtwxyjp4
   vue: 3.2.37
   vue-i18n: 9.2.2_vue@3.2.37
@@ -54,6 +65,7 @@ devDependencies:
   '@semantic-release/exec': 6.0.3_semantic-release@19.0.5
   '@semantic-release/git': 10.0.1_semantic-release@19.0.5
   '@types/flat': 5.0.2
+  '@types/js-cookie': 3.0.2
   '@types/mustache': 4.2.1
   '@types/node': 16.11.41
   '@types/yargs': 17.0.11
@@ -364,8 +376,8 @@ packages:
       vue-i18n:
         optional: true
     dependencies:
-      '@intlify/message-compiler': 9.2.0
-      '@intlify/shared': 9.2.0
+      '@intlify/message-compiler': 9.3.0-beta.1
+      '@intlify/shared': 9.3.0-beta.1
       jsonc-eslint-parser: 1.4.1
       source-map: 0.6.1
       vue-i18n: 9.2.2_vue@3.2.37
@@ -387,14 +399,6 @@ packages:
     dependencies:
       '@intlify/shared': 9.2.2
 
-  /@intlify/message-compiler/9.2.0:
-    resolution: {integrity: sha512-KGwwZsl+Nw2O26ZOKdytncxzKnMZ236KmM70u4GePgbizI+pu8yAh0apKxljSPzEJ7WECKTVc9R+laG12EJQYA==}
-    engines: {node: '>= 14'}
-    dependencies:
-      '@intlify/shared': 9.2.0
-      source-map: 0.6.1
-    dev: true
-
   /@intlify/message-compiler/9.2.2:
     resolution: {integrity: sha512-IUrQW7byAKN2fMBe8z6sK6riG1pue95e5jfokn8hA5Q3Bqy4MBJ5lJAofUsawQJYHeoPJ7svMDyBaVJ4d0GTtA==}
     engines: {node: '>= 14'}
@@ -402,14 +406,22 @@ packages:
       '@intlify/shared': 9.2.2
       source-map: 0.6.1
 
-  /@intlify/shared/9.2.0:
-    resolution: {integrity: sha512-71uObL3Sy2ZiBQBMVETbkspE4Plpy87Hvlj6FAUF3xdD+M82tuxe3MVJjaD3ucqhtHmQWBkAWEurVLdPYr8G2g==}
+  /@intlify/message-compiler/9.3.0-beta.1:
+    resolution: {integrity: sha512-XHjwJB7qJciYA3T19ehBFpcmC1z+R4sMS43fEp30CLOOFLsrB0xuk0V2XeOFsHovaQ2LsK5x0qk+5+Dy6Hs7fw==}
     engines: {node: '>= 14'}
+    dependencies:
+      '@intlify/shared': 9.3.0-beta.1
+      source-map: 0.6.1
     dev: true
 
   /@intlify/shared/9.2.2:
     resolution: {integrity: sha512-wRwTpsslgZS5HNyM7uDQYZtxnbI12aGiBZURX3BTR9RFIKKRWpllTsgzHWvj3HKm3Y2Sh5LPC1r0PDCKEhVn9Q==}
     engines: {node: '>= 14'}
+
+  /@intlify/shared/9.3.0-beta.1:
+    resolution: {integrity: sha512-clf9EF4lY0sANjHlEndwfsR2hvYuq0TElq+gO/1xqH3FMGJwv+6lxJPOtoF4r2IE5RV3qX6YyZejZgdfbq2Yfg==}
+    engines: {node: '>= 14'}
+    dev: true
 
   /@intlify/vite-plugin-vue-i18n/6.0.1_vite@3.0.9+vue-i18n@9.2.2:
     resolution: {integrity: sha512-FFVcxVU4bR9vdDLNbltM5mrhndnXMErO01i0RrpdyMegEt3Nu/YLoH0sFdjRun7/RY4vaEnhTnFvVf9uO0dQvg==}
@@ -427,7 +439,7 @@ packages:
         optional: true
     dependencies:
       '@intlify/bundle-utils': 3.1.0_vue-i18n@9.2.2
-      '@intlify/shared': 9.2.0
+      '@intlify/shared': 9.3.0-beta.1
       '@rollup/pluginutils': 4.2.1
       debug: 4.3.4
       fast-glob: 3.2.11
@@ -572,6 +584,10 @@ packages:
     dependencies:
       '@octokit/openapi-types': 11.2.0
     dev: true
+
+  /@popperjs/core/2.11.6:
+    resolution: {integrity: sha512-50/17A98tWUfQ176raKiOGXuYpLyyVMkxxG6oylzL3BPOlA6ADGdK7EYunSa4I064xerltq9TGXs8HmOk5E+vw==}
+    dev: false
 
   /@rollup/plugin-yaml/3.1.0_rollup@2.78.1:
     resolution: {integrity: sha512-61PsAXqN7YNYdg/nezK3NkqAu6e3Qu2wjHYW3r52Nx0aLi+rG7gkkIqtvxG8EtSqE2rra5CUcWBZj+v362qt9A==}
@@ -793,6 +809,10 @@ packages:
 
   /@types/flat/5.0.2:
     resolution: {integrity: sha512-3zsplnP2djeps5P9OyarTxwRpMLoe5Ash8aL9iprw0JxB+FAHjY+ifn4yZUuW4/9hqtnmor6uvjSRzJhiVbrEQ==}
+    dev: true
+
+  /@types/js-cookie/3.0.2:
+    resolution: {integrity: sha512-6+0ekgfusHftJNYpihfkMu8BWdeHs9EOJuGcSofErjstGPfPGEu9yTu4t460lTzzAMl2cM5zngQJqPMHbbnvYA==}
     dev: true
 
   /@types/json-schema/7.0.11:
@@ -1413,6 +1433,22 @@ packages:
   /boolbase/1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
     dev: true
+
+  /bootstrap-icons/1.9.1:
+    resolution: {integrity: sha512-d4ZkO30MIkAhQ2nNRJqKXJVEQorALGbLWTuRxyCTJF96lRIV6imcgMehWGJUiJMJhglN0o2tqLIeDnMdiQEE9g==}
+    dev: false
+
+  /bootstrap/5.2.0_@popperjs+core@2.11.6:
+    resolution: {integrity: sha512-qlnS9GL6YZE6Wnef46GxGv1UpGGzAwO0aPL1yOjzDIJpeApeMvqV24iL+pjr2kU4dduoBA9fINKWKgMToobx9A==}
+    peerDependencies:
+      '@popperjs/core': ^2.11.5
+    dependencies:
+      '@popperjs/core': 2.11.6
+    dev: false
+
+  /bootswatch/5.2.0:
+    resolution: {integrity: sha512-v9krdPdybb5hUwVwlv3f7/FhOa5cXbCb5U5CI4gdnalcxR3ekclXE6kPZWL5O8V8qwNI9BB73apASO1MLmRpIA==}
+    dev: false
 
   /bottleneck/2.19.5:
     resolution: {integrity: sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==}
@@ -2981,6 +3017,11 @@ packages:
       '@sideway/formula': 3.0.0
       '@sideway/pinpoint': 2.0.0
     dev: true
+
+  /js-cookie/3.0.1:
+    resolution: {integrity: sha512-+0rgsUXZu4ncpPxRL+lNEptWMOWl9etvPHc/koSRp6MPwpRYAhmk0dUG00J4bxVV3r9uUzfo24wW0knS07SKSw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /js-stringify/1.0.2:
     resolution: {integrity: sha512-rtS5ATOo2Q5k1G+DADISilDA6lv79zIiwFd6CcjuIxGKLFm5C+RLImRscVap9k55i+MOZwgliw+NejvkLuGD5g==}

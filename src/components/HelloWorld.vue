@@ -1,7 +1,8 @@
 <template lang="pug">
 .lang-select
-  select(
+  select.form-select.d-inline-block(
     v-model='store.locale'
+    style='width: initial'
   )
     option(
       v-for='l in store.locales'
@@ -18,6 +19,20 @@ h3
   small {{ t('small-feat') }}
 .feat {{ t('cache-control-test-feat') }}
 .fix.text-secondary {{ t('test-fix', {n: ".11 - the excitement"}) }}
+.text-secondary
+  i.bi.bi-app-indicator
+.theme-select
+  select.form-select.d-inline-block(
+    v-model='store.theme'
+    style='width: initial'
+  )
+    option(
+      v-for='t in themes'
+      :value='t.value'
+    ) {{ t.name }}
+  .current
+    small {{ t('current-theme') }} {{ store.theme || '(default)' }}
+
 </template>
 
 <script setup lang="ts">
@@ -29,30 +44,9 @@ const store = useStore();
 
 const version = __APP_VERSION__;
 const appLink = __APP_LINK__;
+const themesArray = ['(default)', ...__APP_THEMES__];
+const themes = themesArray.map((t) => {
+  if (__APP_THEMES__.includes(t)) return {name: t, value: t};
+  else return {name: t, value: null};
+});
 </script>
-
-<style scoped>
-a {
-  color: #42b983;
-}
-
-label {
-  margin: 0 0.5em;
-  font-weight: bold;
-}
-
-code {
-  background-color: #eee;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: #304455;
-}
-
-.btn-major {
-  font-size: 5rem;
-}
-
-.really-small {
-  font-size: 33%;
-}
-</style>

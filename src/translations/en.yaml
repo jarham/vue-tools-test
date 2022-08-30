@@ -1,6 +1,7 @@
 greeting: Greetings!
 fb-test: A Fallback test
 current-locale: 'Current language:'
+current-theme: 'Current theme:'
 small-feat: Small feature
 cache-control-test-feat: Cache control test feature
 test-fix: Test fix {n}
