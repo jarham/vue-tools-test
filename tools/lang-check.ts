@@ -339,7 +339,7 @@ async function main(errors: string[], warnings: string[], notes: string[]) {
       errors.push(`Failed to parse ${t.file}:\n${ee.message}`);
       continue;
     }
-    t.keys = Object.entries(flatten(t.parsed)).map(([key]) => key);
+    t.keys = Object.entries<string>(flatten(t.parsed)).map(([key]) => key);
   }
 
   const noChkMissExcess =
