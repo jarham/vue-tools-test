@@ -1,3 +1,15 @@
+# [5.4.0-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.3.11...v5.4.0-rc.1) (2022-08-30)
+
+
+### Bug Fixes
+
+* be specific about Object.entries() type in tools ([1f30e46](https://github.com/symcode-fi/vue-tools-test/commit/1f30e468c085e6f1cac946aeb27efea43408790d))
+
+
+### Features
+
+* use bootstrap with selectable themes ([5c398f9](https://github.com/symcode-fi/vue-tools-test/commit/5c398f9f766d25e5545d7e8a0b4025778a02a0b0))
+
 ## [5.3.11](https://github.com/symcode-fi/vue-tools-test/compare/v5.3.10...v5.3.11) (2022-08-26)
 
 

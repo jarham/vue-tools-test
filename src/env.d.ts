@@ -16,3 +16,4 @@ declare module '*translations/_config.yaml' {
 // For defines in vite.config.js
 declare const __APP_VERSION__: string;
 declare const __APP_LINK__: string | null;
+declare const __APP_THEMES__: string[];
