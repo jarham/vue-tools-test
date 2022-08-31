@@ -113,16 +113,11 @@ jobs:
         run: |
           function deploy {
             local deppath="${1}"
-            echo "Deploying to '${deppath}'"
+            local prev_prefix="${2}"
+            echo "Deploying to '${deppath}' (prev_prefix='${prev_prefix}')"
 
-            # Get previous release assets if deploying to "latest release"
-            if [ "${deppath}" == "latest" ]; then
-              PREV_REL_PREFIX="$(aws s3api list-objects-v2 --bucket ${{ secrets.AWS_BUCKET_NAME }} --delimiter / --prefix release/ | jq -r '.CommonPrefixes | .[].Prefix' | sort -V | tail -n1)"
-            else
-              PREV_REL_PREFIX=""
-            fi
-            if [ ! -z "${PREV_REL_PREFIX}" ]; then
-              aws s3 cp --recursive "s3://${{ secrets.AWS_BUCKET_NAME }}/${PREV_REL_PREFIX}assets/" dist/assets/
+            if [ ! -z "${prev_prefix}" ]; then
+              aws s3 cp --recursive "s3://${{ secrets.AWS_BUCKET_NAME }}/${prev_prefix}assets/" dist/assets/
             fi
 
             # index.html with it's own cache control
@@ -135,14 +130,20 @@ jobs:
             aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/"
           }
 
-          # Deploy to latest if doing a release.
-          # NOTE: Do this first so that we get prev release correctly!
-          if [ "${GITHUB_REF_NAME}" == "main" ]; then deploy latest; fi
+          # Get previous release prefix for copying assets if deploying to "latest release"
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then
+            PREV_REL_PREFIX="$(aws s3api list-objects-v2 --bucket ${{ secrets.AWS_BUCKET_NAME }} --delimiter / --prefix release/ | jq -r '.CommonPrefixes | .[].Prefix' | sort -V | tail -n1)"
+          else
+            PREV_REL_PREFIX=""
+          fi
 
           # Always deploy to release or rc folder
           DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
           REL_NAME="v$(cat .version.local)"
           deploy "${DPATH}/${REL_NAME}"
+
+          # Deploy to latest if doing a release.
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then deploy latest "${PREV_REL_PREFIX}"; fi
 
           # Deploy error pages on release
           if [ "${GITHUB_REF_NAME}" == "main" ]; then
