@@ -46,11 +46,13 @@ function assetFilename(
   assetInfo: {name: string},
   env: Record<string, string>,
 ): string {
+  // bootMatch[1] is the Bootswatch's theme name if there's a match
   const bootMatch = assetInfo.name.match(bootSwatchMatcher);
   const isBootswatchCss = !!bootMatch;
-  const pathPart = isBootswatchCss ? `assets/${bootMatch[1]}` : 'assets';
+  const pathPart = isBootswatchCss ? `assets/themes` : 'assets';
+  const namePart = isBootswatchCss ? `${bootMatch[1]}` : '[name]';
   const hashPart = isRelease ? `${env.APP_VERSION}` : '[hash]';
-  return `${pathPart}/[name]-${hashPart}.[ext]`;
+  return `${pathPart}/${namePart}-${hashPart}.[ext]`;
 }
 
 // https://vitejs.dev/config/
