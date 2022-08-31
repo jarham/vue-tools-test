@@ -73,7 +73,32 @@ jobs:
       - name: Deploy artifacts to S3
         env:
           PR_NUM: ${{ github.event.number }}
-        run: aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/pr/${PR_NUM}/${GITHUB_RUN_NUMBER}/" && touch deploy-ok
+        run: |
+          function deploy {
+            local deppath="${1}"
+            echo "Deploying to '${deppath}'"
+
+            # Get previous release assets if deploying to "latest release"
+            if [ "${deppath}" == "latest" ]; then
+              PREV_REL_PREFIX="$(aws s3api list-objects-v2 --bucket ${{ secrets.AWS_BUCKET_NAME }} --delimiter / --prefix release/ | jq -r '.CommonPrefixes | .[].Prefix' | sort -V | tail -n1)"
+            else
+              PREV_REL_PREFIX=""
+            fi
+            if [ ! -z "${PREV_REL_PREFIX}" ]; then
+              aws s3 cp --recursive "s3://${{ secrets.AWS_BUCKET_NAME }}/${PREV_REL_PREFIX}assets/" dist/assets/
+            fi
+
+            # index.html with it's own cache control
+            aws s3 cp --cache-control max-age=600,s-maxage=300 dist/index.html "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/"
+
+            # assets with their own cache control (can be long because of hashed/versioned names)
+            aws s3 sync --cache-control max-age=31536000 --delete dist/assets/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/assets/"
+
+            # the rest with defaults
+            aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/"
+          }
+          deploy "pr/${PR_NUM}/${GITHUB_RUN_NUMBER}" && touch deploy-ok
+
       - name: Set result
         if: ${{ always() }}
         id: result
