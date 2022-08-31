@@ -46,8 +46,6 @@ function assetFilename(
   assetInfo: {name: string},
   env: Record<string, string>,
 ): string {
-  // `assets/[name]-${env.APP_VERSION}.[ext]`
-  // `assets/[name]-[hash].[ext]`
   const bootMatch = assetInfo.name.match(bootSwatchMatcher);
   const isBootswatchCss = !!bootMatch;
   const pathPart = isBootswatchCss ? `assets/${bootMatch[1]}` : 'assets';
