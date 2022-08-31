@@ -139,9 +139,15 @@ jobs:
           # NOTE: Do this first so that we get prev release correctly!
           if [ "${GITHUB_REF_NAME}" == "main" ]; then deploy latest; fi
 
-          # Always deploy to release/rc folder
+          # Always deploy to release or rc folder
+          DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
+          REL_NAME="v$(cat .version.local)"
           deploy "${DPATH}/${REL_NAME}"
 
+          # Deploy error pages on release
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then
+            aws s3 sync --delete errors/ "s3://${{ secrets.AWS_BUCKET_NAME }}/errors/"
+          fi
       - name: Edit Github release
         # Run only if new version is made
         if: ${{ steps.check-version.outputs.new-version == 'true' }}
