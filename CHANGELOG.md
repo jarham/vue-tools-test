@@ -1,3 +1,10 @@
+## [5.5.2-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.5.1...v5.5.2-rc.1) (2022-08-31)
+
+
+### Bug Fixes
+
+* modify README to check that releases actually work ([4edcc3c](https://github.com/symcode-fi/vue-tools-test/commit/4edcc3c0a3fee1e41d9c0520bb9816a9b6244cf7))
+
 ## [5.5.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.5.0...v5.5.1) (2022-08-31)
 
 

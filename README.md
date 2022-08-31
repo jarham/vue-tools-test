@@ -1,10 +1,6 @@
 # Vue 3 tools test
 
-Just testing ...
-
-Just updating README.
-
-Just updating README again.
+It's a test project.
 
 # Tooling
 
