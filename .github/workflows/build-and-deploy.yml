@@ -139,7 +139,9 @@ jobs:
           # NOTE: Do this first so that we get prev release correctly!
           if [ "${GITHUB_REF_NAME}" == "main" ]; then deploy latest; fi
 
-          # Always deploy to release/rc folder
+          # Always deploy to release or rc folder
+          DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
+          REL_NAME="v$(cat .version.local)"
           deploy "${DPATH}/${REL_NAME}"
 
       - name: Edit Github release
