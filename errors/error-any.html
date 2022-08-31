@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Error</title>
+    <style>
+      body {background-color:#000;overflow-x:hidden;color:#f00;font-family: monospace,monospace;}
+      .container {height:95vh;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+      .error {font-size:29vw;line-height:1;}
+      .home {position:relative;font-size:300%;}
+      @media (max-width:500px) { .home {font-size:200%;} }
+      @media (max-width:350px) { .home {font-size:133%;} }
+      @media (max-width:200px) { .home {font-size:100%;} }
+      @media (max-width:170px) { .home {font-size:90%;} }
+      a {color:#0f0; margin-right: 0.5rem;}
+      .finger {animation: 0.4s infinite alternate fng; position: absolute;}
+      @keyframes fng {0% {transform: translateX(0);}100% {transform: translateX(10px);}}
+    </style>
+  </head>
+  <body>
+    <div class="container"><div class="error">Error</div><div class="home">Try <a href="/">home</a> <span class="finger">👈</span></div></div>
+  </body>
+</html>
