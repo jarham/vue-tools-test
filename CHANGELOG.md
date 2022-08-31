@@ -1,3 +1,15 @@
+# [5.5.0](https://github.com/symcode-fi/vue-tools-test/compare/v5.4.0...v5.5.0) (2022-08-31)
+
+
+### Bug Fixes
+
+* correct release and rc paths ([5066df5](https://github.com/symcode-fi/vue-tools-test/commit/5066df5bf6f9779b9698a1fde0ef6329ded33478))
+
+
+### Features
+
+* rename bootswatch theme files by theme name on build ([9a50c38](https://github.com/symcode-fi/vue-tools-test/commit/9a50c38c59c77b1bb7de130d3a8a810a63f9eef0))
+
 # [5.5.0-rc.2](https://github.com/symcode-fi/vue-tools-test/compare/v5.5.0-rc.1...v5.5.0-rc.2) (2022-08-31)
 
 
