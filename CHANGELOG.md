@@ -1,3 +1,10 @@
+## [5.5.1-rc.1](https://github.com/symcode-fi/vue-tools-test/compare/v5.5.0...v5.5.1-rc.1) (2022-08-31)
+
+
+### Bug Fixes
+
+* copy release artifacts in correct order ([14a9303](https://github.com/symcode-fi/vue-tools-test/commit/14a93034707230af7d2588c656be8af0d37f708e))
+
 # [5.5.0](https://github.com/symcode-fi/vue-tools-test/compare/v5.4.0...v5.5.0) (2022-08-31)
 
 
