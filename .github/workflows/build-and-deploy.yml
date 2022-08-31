@@ -111,21 +111,37 @@ jobs:
         # BE CAREFUL WITH SYNC + --delete option! Don't target it to S3 root because
         # you'll EASILY DELETE EVERYTHING ELSE except new files.
         run: |
-          if [ "${GITHUB_REF_NAME}" == "main" ]; then
-            PREV_REL_PREFIX="$(aws s3api list-objects-v2 --bucket ${{ secrets.AWS_BUCKET_NAME }} --delimiter / --prefix release/ | jq -r '.CommonPrefixes | .[].Prefix' | sort -V | tail -n1)"
-          else
-            PREV_REL_PREFIX=""
-          fi
-          DPATH="$(if [ "${GITHUB_REF_NAME}" == "main" ]; then echo release; else echo rc; fi)"
-          REL_NAME="v$(cat .version.local)"
-          aws s3 cp --recursive dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${DPATH}/${REL_NAME}/"
-          if [ "${GITHUB_REF_NAME}" == "main" ]; then
+          function deploy {
+            local deppath="${1}"
+            echo "Deploying to '${deppath}'"
+
+            # Get previous release assets if deploying to "latest release"
+            if [ "${deppath}" == "latest" ]; then
+              PREV_REL_PREFIX="$(aws s3api list-objects-v2 --bucket ${{ secrets.AWS_BUCKET_NAME }} --delimiter / --prefix release/ | jq -r '.CommonPrefixes | .[].Prefix' | sort -V | tail -n1)"
+            else
+              PREV_REL_PREFIX=""
+            fi
             if [ ! -z "${PREV_REL_PREFIX}" ]; then
               aws s3 cp --recursive "s3://${{ secrets.AWS_BUCKET_NAME }}/${PREV_REL_PREFIX}assets/" dist/assets/
             fi
-            aws s3 cp --cache-control max-age=600,s-maxage=300 dist/index.html "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
-            aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/latest/"
-          fi
+
+            # index.html with it's own cache control
+            aws s3 cp --cache-control max-age=600,s-maxage=300 dist/index.html "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/"
+
+            # assets with their own cache control (can be long because of hashed/versioned names)
+            aws s3 sync --cache-control max-age=31536000 --delete dist/assets/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/assets/"
+
+            # the rest with defaults
+            aws s3 sync --delete dist/ "s3://${{ secrets.AWS_BUCKET_NAME }}/${deppath}/"
+          }
+
+          # Deploy to latest if doing a release.
+          # NOTE: Do this first so that we get prev release correctly!
+          if [ "${GITHUB_REF_NAME}" == "main" ]; then deploy latest; fi
+
+          # Always deploy to release/rc folder
+          deploy "${DPATH}/${REL_NAME}"
+
       - name: Edit Github release
         # Run only if new version is made
         if: ${{ steps.check-version.outputs.new-version == 'true' }}
