@@ -1,8 +1,13 @@
 <template lang="pug">
-.editor.d-flex.justify-content-center
-  .before.m-1 BEFORE
-  YTextEdit(:ytext='title' style='width: 20ch;')
-  .after.m-1 AFTER
+.editor
+  .d-flex.justify-content-center
+    .before.m-1 BEFORE
+    YTextEdit(:ytext='title' style='width: 20ch;')
+    .after.m-1 AFTER
+  .d-flex.justify-content-center
+    .before.m-1 BEFORE
+    EventLogger(style='width: 20ch;')
+    .after.m-1 AFTER
 </template>
 
 <script setup lang="ts">
@@ -12,6 +17,7 @@ import {useStore} from '../store';
 import * as Y from 'yjs';
 import {WebsocketProvider} from 'y-websocket';
 import YTextEdit from './editor-components/YTextEdit.vue';
+import EventLogger from './editor-components/EventLogger.vue';
 
 const {t} = useI18n();
 

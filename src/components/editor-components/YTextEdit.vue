@@ -4,6 +4,9 @@
     style='min-width: 1ch;'
     @beforeinput='onBeforeInput'
     @input='onInput'
+    @compositionstart='onComposition'
+    @compositionupdate='onComposition'
+    @compositionend='onComposition'
     ref='editor'
   ) {{ text ? text : '' }}
 </template>
@@ -112,10 +115,10 @@ const applyDelta = (da: Delta[], me: boolean) => {
       txt = txt.slice(0, pos) + txt.slice(pos + d.delete);
       if (r || me) {
         if (pos < start) {
-          start -= d.delete;
+          start -= Math.min(start - pos, d.delete);
         }
         if (pos < end) {
-          end -= d.delete;
+          end -= Math.min(end - pos, d.delete);
         }
       }
     }
@@ -152,7 +155,9 @@ function getRangeInEditor(): Range | null {
 }
 
 const onBeforeInput = (e: InputEvent) => {
-  const r = getRangeInEditor();
+  const rr = getRangeInEditor();
+  const tr = e.getTargetRanges()[0];
+  const r = tr || rr || null;
 
   // console.log('before collapse:', r);
   // r.collapse();
@@ -161,29 +166,51 @@ const onBeforeInput = (e: InputEvent) => {
   const t = e.target as HTMLInputElement;
   console.log('beforeinput', r?.startOffset);
   console.log('beforeinput', r?.endOffset);
+  console.log('beforeinput', tr?.startOffset);
+  console.log('beforeinput', tr?.endOffset);
   console.log('beforeinput, e.inputType', e.inputType);
-  // console.log('beforeinput', e);
+  console.log('beforeinput', e);
+  console.log('beforeinput', e.getTargetRanges());
   // console.log('beforeinput', e.getTargetRanges());
   // console.log('beforeinput', e.dataTransfer);
   const start = r?.startOffset || 0;
   const end = r?.endOffset || start;
   const count = Math.max(end - start, 1);
-  if (!props.ytext) return;
+  if (!props.ytext || composing) return;
   switch (e.inputType) {
     case 'insertText':
+    case 'insertReplacementText':
+    case 'insertFromPaste':
+    case 'insertFromDrop':
       if (end > start) {
         props.ytext.delete(start, count);
       }
-      props.ytext.insert(start, e.data || '');
+      props.ytext.insert(
+        start,
+        e.data || e.dataTransfer?.getData('text/plain') || '',
+      );
       e.preventDefault();
       break;
     case 'deleteContentForward':
+    case 'deleteByCut':
+    case 'deleteByDrag':
       props.ytext.delete(start, count);
       e.preventDefault();
       break;
     case 'deleteContentBackward':
-      props.ytext.delete(start - count, count);
+      if (end === start) {
+        props.ytext.delete(start - count, count);
+      } else {
+        props.ytext.delete(start, count);
+      }
       e.preventDefault();
+      break;
+    case 'insertLineBreak':
+    case 'insertParagraph':
+      e.preventDefault();
+      break;
+    default:
+      console.log('beforeinput, unhandled: ', e);
       break;
   }
 };
@@ -191,13 +218,14 @@ const onInput = (e: InputEvent) => {
   const t = e.target as HTMLInputElement;
   // console.log('input', t.selectionStart);
   // console.log('input', t.selectionEnd);
-  // console.log('input', e);
+  console.log('input', e);
+  e.preventDefault();
   // console.log('input', e.getTargetRanges());
   // console.log('input', e.dataTransfer);
 };
 
 const selChange = () => {
-  if (!editor.value) return;
+  if (!editor.value || composing) return;
   const sel = document.getSelection();
   if (!sel) return;
   // const contained =
@@ -262,6 +290,36 @@ onUpdated(() => {
     console.log('onUpdated txtNode:', txtNode);
   }
 });
+
+let composing = false;
+let composingRange: Range | null = null;
+const onComposition = (e: CompositionEvent) => {
+  console.log(`${e.type}:`, e, composingRange);
+  switch (e.type) {
+    case 'compositionstart':
+      composing = true;
+      composingRange = getRangeInEditor();
+      start = composingRange?.startOffset || 0;
+      end = composingRange?.endOffset || start;
+      break;
+    case 'compositionend':
+      composing = false;
+      const count = Math.max(end - start, 1);
+      if (end > start && props.ytext) {
+        props.ytext.delete(start, count);
+      }
+      // Chromium has input data in this event.
+      // FF does not but it sends a separate input event.
+      if (e.data && props.ytext) {
+        props.ytext.insert(start, e.data);
+        e.preventDefault();
+      }
+      composingRange = null;
+      break;
+    default:
+      break;
+  }
+};
 </script>
 
 <style lang="scss">
