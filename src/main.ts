@@ -6,6 +6,7 @@ import messages from '@intlify/vite-plugin-vue-i18n/messages';
 import {useStore} from './store';
 import i18nConfig from './translations/_config.yaml';
 import Cookies from 'js-cookie';
+import createRouter from './router';
 
 const themeCssId = 'vtt-theme';
 
@@ -18,7 +19,8 @@ const i18n = createI18n({
   messages,
 });
 
-const app = createApp(App).use(pinia).use(i18n);
+const router = createRouter();
+const app = createApp(App).use(pinia).use(i18n).use(router);
 const store = useStore();
 const {theme} = storeToRefs(store);
 let mounted = false;

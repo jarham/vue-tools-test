@@ -5,3 +5,6 @@ current-theme: 'Valittu teema:'
 small-feat: Pieni fiitseri
 cache-control-test-feat: Välimuistikontrollin testiominaisuus
 test-fix: Testi fixi {n}
+nav:
+  home: Koti
+  editor: Editori

@@ -5,6 +5,9 @@ current-theme: 'Current theme:'
 small-feat: Small feature
 cache-control-test-feat: Cache control test feature
 test-fix: Test fix {n}
+nav:
+  home: Home
+  editor: Editor
 
 language:
   en-AU: English (AU)
