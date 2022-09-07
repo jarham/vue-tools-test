@@ -1,5 +1,5 @@
 <template lang="pug">
-.y-component.y-text-edit.px-2.py-1.rounded.border.editable(
+.y-component.y-text-edit.px-2.py-1.rounded.border.editable.position-relative(
     :contenteditable='typeof text === "string" ? "true" : "false"'
     style='min-width: 1ch;'
     @beforeinput='onBeforeInput'
@@ -9,10 +9,15 @@
     @compositionend='onComposition'
     ref='editor'
   ) {{ text ? text : '' }}
+  template(
+    v-for='(v, k) in selections'
+  )
+    .position-absolute.y-caret(:ref='(e: HTMLDivElement | null) => selRef(e, v)')
 </template>
 
 <script setup lang="ts">
 import {onBeforeUnmount, onMounted, onUpdated, ref, watch} from 'vue';
+import type {TextSelectionChangeEvent} from './editor-events';
 import * as Y from 'yjs';
 
 // Copy paste from Y
@@ -28,8 +33,13 @@ interface Delta {
 }
 
 const props = defineProps<{
+  cid: string;
   ytext?: Y.Text;
 }>();
+const emit = defineEmits<{
+  (e: 'text-selection-change', change: TextSelectionChangeEvent): void;
+}>();
+
 const text = ref<string | undefined>();
 const editor = ref<HTMLDivElement>();
 let start = -1;
@@ -224,10 +234,10 @@ const onInput = (e: InputEvent) => {
   // console.log('input', e.dataTransfer);
 };
 
+let selStart = -1;
+let selEnd = -1;
 const selChange = () => {
   if (!editor.value || composing) return;
-  const sel = document.getSelection();
-  if (!sel) return;
   // const contained =
   //   editor.value.childNodes[0] &&
   //   sel.containsNode(editor.value.childNodes[0], true);
@@ -235,31 +245,40 @@ const selChange = () => {
   //   editor.value.contains(sel.anchorNode) &&
   //   editor.value.contains(sel.focusNode);
   const r = getRangeInEditor();
+  const oldStart = selStart;
+  const oldEnd = selEnd;
+
   if (!r) {
+    selStart = -1;
+    selEnd = -1;
     start = -1;
     end = -1;
-    console.log(
-      'selChange',
-      start,
-      end,
-      'anchor:',
-      sel.anchorNode,
-      'focus:',
-      sel.focusNode,
-    );
-    return;
+  } else {
+    selStart = r.startOffset;
+    selEnd = r.endOffset;
+    start = r.startOffset;
+    end = r.endOffset;
   }
-  start = r.startOffset;
-  end = r.endOffset;
-  console.log(
-    'selChange',
-    start,
-    end,
-    'anchor:',
-    sel.anchorNode,
-    'focus:',
-    sel.focusNode,
-  );
+  // console.log(
+  //   'selChange',
+  //   start,
+  //   end,
+  //   'anchor:',
+  //   sel.anchorNode,
+  //   'focus:',
+  //   sel.focusNode,
+  // );
+  console.log('selChange', selStart, selEnd, r);
+  if (oldStart !== selStart || oldEnd !== selEnd) {
+    console.log('selChange emit', selStart, selEnd);
+    emit('text-selection-change', {
+      cid: props.cid,
+      start: selStart,
+      end: selEnd,
+      oldStart,
+      oldEnd,
+    });
+  }
 };
 
 onMounted(() => {
@@ -320,11 +339,104 @@ const onComposition = (e: CompositionEvent) => {
       break;
   }
 };
+
+interface SelectionData {
+  id: string;
+  start: number;
+  end: number;
+  color: string;
+  ol: HTMLDivElement | null;
+}
+
+const colors = [
+  'rgb(255, 97, 97)',
+  'rgb(97, 255, 97)',
+  'rgb(152, 152, 255)',
+  'rgb(250, 148, 31)',
+  'rgb(193, 78, 250)',
+];
+let colorIndex = 0;
+
+const selections = ref<{[key: string]: SelectionData}>(Object.create(null));
+function setSelection(id: string, start: number | null, end: number | null) {
+  const sels = selections.value;
+  console.log(`setSelection:`, id, start, end, sels);
+  if (!sels) return;
+  let sel = sels[id];
+  if (start === null || end === null) {
+    delete sels[id];
+  } else {
+    if (!sel) {
+      sel = {id, start, end, ol: null, color: colors[colorIndex]};
+      colorIndex = (colorIndex + 1) % colors.length;
+    } else {
+      sel.start = start;
+      sel.end = end;
+    }
+    sels[id] = sel;
+    updateCaretPosition(sel);
+  }
+}
+
+const selRef = (d: HTMLDivElement | null, s: SelectionData) => {
+  console.log('selRef:', s, d);
+  if (d) {
+    s.ol = d;
+    s.ol.style.backgroundColor = s.color;
+  } else {
+    if (s.ol) {
+      s.ol.style.top = '0';
+      s.ol.style.left = '0';
+      s.ol.style.display = 'none';
+      s.ol = null;
+    }
+  }
+  updateCaretPosition(s);
+};
+
+function updateCaretPosition(s: SelectionData) {
+  if (!s.ol || !editor.value) return;
+  const rn = document.createRange();
+  const txtNode = editor.value.childNodes[0];
+  if (!txtNode) return;
+  if (txtNode.textContent === null) return;
+  if (s.start > txtNode.textContent.length) return;
+  if (s.end > txtNode.textContent.length) return;
+  const er = editor.value.getBoundingClientRect();
+  rn.setStart(txtNode, s.start);
+  rn.setEnd(txtNode, s.end);
+  const r = rn.getBoundingClientRect();
+  console.log(`updateCaretPosition: `, rn, r, s);
+  const l = r.left - er.left - 1;
+  s.ol.style.top = `${r.top - er.top}px`;
+  s.ol.style.left = `${l}px`;
+  if (s.start !== s.end) {
+    s.ol.style.width = `${r.width}px`;
+    s.ol.style.opacity = `0.4`;
+  } else {
+    s.ol.style.removeProperty('width');
+    s.ol.style.opacity = `0.5`;
+  }
+  s.ol.style.display = 'inline-block';
+}
+
+defineExpose({
+  setSelection,
+});
 </script>
 
 <style lang="scss">
 .y-text-edit {
   overflow-x: hidden;
   white-space: nowrap;
+}
+.y-caret {
+  min-width: 2px;
+  background-color: rgb(255, 97, 97);
+  opacity: 0.4;
+  z-index: 500;
+  min-height: 20px;
+  display: none;
+  pointer-events: none;
 }
 </style>

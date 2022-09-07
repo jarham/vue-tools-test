@@ -2,14 +2,29 @@
 .editor
   .d-flex.justify-content-center
     .before.m-1 BEFORE
-    YTextEdit(:ytext='title' style='width: 20ch;')
+    YTextEdit(
+      cid='testedit'
+      :ytext='title'
+      style='width: 20ch;'
+      @text-selection-change='onTextSelectionChange'
+      ref='editTxt'
+    )
     .after.m-1 AFTER
   .d-flex.justify-content-center
     .before.m-1 BEFORE
     EventLogger(style='width: 20ch;')
     .after.m-1 AFTER
 </template>
-
+<script lang="ts">
+interface AwarenessInfo {
+  selection?: TextSelectionChangeEvent;
+}
+interface AwarenessUpdate {
+  added: number[];
+  updated: number[];
+  removed: number[];
+}
+</script>
 <script setup lang="ts">
 import {onMounted, ref} from 'vue';
 import {useI18n} from 'vue-i18n';
@@ -18,8 +33,11 @@ import * as Y from 'yjs';
 import {WebsocketProvider} from 'y-websocket';
 import YTextEdit from './editor-components/YTextEdit.vue';
 import EventLogger from './editor-components/EventLogger.vue';
+import type {TextSelectionChangeEvent} from './editor-components/editor-events';
 
 const {t} = useI18n();
+
+const editTxt = ref<InstanceType<typeof YTextEdit>>();
 
 const doc = new Y.Doc();
 let map: Y.Map<any> | undefined;
@@ -29,6 +47,33 @@ const wsProvider = new WebsocketProvider(
   'my-roomname',
   doc,
 );
+const awareness = wsProvider.awareness;
+awareness.on('update', (update: AwarenessUpdate) => {
+  console.log('awareness update:', update);
+  const all = update.added.concat(update.updated);
+  all
+    .filter((u) => u !== awareness.clientID)
+    .forEach((u) => {
+      const s = awareness.getStates().get(u) as AwarenessInfo;
+      console.log(`awareness ${u}:`, s);
+      if (editTxt.value && s.selection) {
+        const sel = s.selection;
+        editTxt.value.setSelection(
+          `${u}`,
+          sel.start !== null && sel.start >= 0 ? sel.start : null,
+          sel.end !== null && sel.end >= 0 ? sel.end : null,
+        );
+      }
+    });
+  update.removed
+    .filter((u: number) => u !== awareness.clientID)
+    .forEach((u: number) => {
+      console.log(`awareness remove ${u}`);
+      if (editTxt.value) {
+        editTxt.value.setSelection(`${u}`, null, null);
+      }
+    });
+});
 wsProvider.on('status', (event) => {
   console.log(event.status); // logs "connected" or "disconnected"
 });
@@ -58,4 +103,9 @@ wsProvider.on('sync', (synced) => {
 onMounted(() => {
   console.log('XXX');
 });
+
+const onTextSelectionChange = (change: TextSelectionChangeEvent) => {
+  console.log('onTextSelectionChange:', change);
+  awareness.setLocalStateField('selection', change);
+};
 </script>
