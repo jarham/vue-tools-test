@@ -342,10 +342,13 @@ const onComposition = (e: CompositionEvent) => {
 
 interface SelectionData {
   id: string;
+  name: string;
   start: number;
   end: number;
   color: string;
   ol: HTMLDivElement | null;
+  cd: HTMLDivElement | null;
+  nd: HTMLDivElement | null;
 }
 
 const colors = [
@@ -358,18 +361,33 @@ const colors = [
 let colorIndex = 0;
 
 const selections = ref<{[key: string]: SelectionData}>(Object.create(null));
-function setSelection(id: string, start: number | null, end: number | null) {
+function setSelection(
+  id: string,
+  name: string,
+  start: number | null,
+  end: number | null,
+) {
   const sels = selections.value;
-  console.log(`setSelection:`, id, start, end, sels);
+  console.log(`setSelection:`, id, name, start, end, sels);
   if (!sels) return;
   let sel = sels[id];
   if (start === null || end === null) {
     delete sels[id];
   } else {
     if (!sel) {
-      sel = {id, start, end, ol: null, color: colors[colorIndex]};
+      sel = {
+        id,
+        name,
+        start,
+        end,
+        ol: null,
+        cd: null,
+        nd: null,
+        color: colors[colorIndex],
+      };
       colorIndex = (colorIndex + 1) % colors.length;
     } else {
+      sel.name = name;
       sel.start = start;
       sel.end = end;
     }
@@ -382,20 +400,32 @@ const selRef = (d: HTMLDivElement | null, s: SelectionData) => {
   console.log('selRef:', s, d);
   if (d) {
     s.ol = d;
-    s.ol.style.backgroundColor = s.color;
+    s.cd = document.createElement('div');
+    s.nd = document.createElement('div');
+    s.cd.classList.add('y-caret-indicator');
+    s.cd.style.backgroundColor = s.color;
+    s.nd.classList.add('y-caret-name');
+    s.nd.style.backgroundColor = s.color;
+    s.ol.appendChild(s.cd);
+    s.ol.appendChild(s.nd);
   } else {
     if (s.ol) {
       s.ol.style.top = '0';
       s.ol.style.left = '0';
       s.ol.style.display = 'none';
-      s.ol = null;
+      s.ol.remove();
     }
+    if (s.cd) s.cd.remove();
+    if (s.nd) s.nd.remove();
+    s.ol = null;
+    s.cd = null;
+    s.nd = null;
   }
   updateCaretPosition(s);
 };
 
 function updateCaretPosition(s: SelectionData) {
-  if (!s.ol || !editor.value) return;
+  if (!s.ol || !s.cd || !s.nd || !editor.value) return;
   const rn = document.createRange();
   const txtNode = editor.value.childNodes[0];
   if (!txtNode) return;
@@ -412,12 +442,14 @@ function updateCaretPosition(s: SelectionData) {
   s.ol.style.left = `${l}px`;
   s.ol.style.height = `${r.height}px`;
   if (s.start !== s.end) {
-    s.ol.style.width = `${r.width}px`;
-    s.ol.style.opacity = `0.4`;
+    s.cd.style.width = `${r.width}px`;
+    s.cd.style.opacity = `0.4`;
   } else {
-    s.ol.style.removeProperty('width');
-    s.ol.style.opacity = `0.5`;
+    s.cd.style.removeProperty('width');
+    s.cd.style.opacity = `0.5`;
   }
+  s.nd.textContent = s.name;
+  s.nd.style.bottom = `${r.height}px`;
   s.ol.style.display = 'inline-block';
 }
 
@@ -434,9 +466,22 @@ defineExpose({
 .y-caret {
   min-width: 2px;
   background-color: rgb(255, 97, 97);
-  opacity: 0.4;
   z-index: 500;
   display: none;
   pointer-events: none;
+  .y-caret-indicator {
+    position: absolute;
+    top: 0;
+    opacity: 0.4;
+  }
+  .y-caret-name {
+    padding: 1px;
+    border-bottom-right-radius: 2px;
+    border-top-right-radius: 2px;
+    opacity: 8;
+    position: absolute;
+    color: white;
+    font-size: xx-small;
+  }
 }
 </style>

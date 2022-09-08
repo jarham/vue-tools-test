@@ -1,6 +1,10 @@
 <template lang="pug">
 .editor
   .d-flex.justify-content-center.align-items-center.flex-column
+    .input-group.justify-content-center.align-items-center
+      span.input-group-text You are
+      input.form-control(type=text v-model='name' placeholder='unknown' style='max-width: 40ch;')
+      button.btn.btn-outline-secondary(@click='store.randomName()') Randomize
     .form-check
       input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='editorDebug')
       label.form-check-label(for='editor-debug') Editor debug
@@ -30,6 +34,7 @@
 <script lang="ts">
 interface AwarenessInfo {
   selection?: TextSelectionChangeEvent;
+  name?: string;
 }
 interface AwarenessUpdate {
   added: number[];
@@ -38,9 +43,10 @@ interface AwarenessUpdate {
 }
 </script>
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
+import {onMounted, ref, watch} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useStore} from '../store';
+import {storeToRefs} from 'pinia';
 import * as Y from 'yjs';
 import {WebsocketProvider} from 'y-websocket';
 import YTextEdit from './editor-components/YTextEdit.vue';
@@ -48,6 +54,8 @@ import EventLogger from './editor-components/EventLogger.vue';
 import type {TextSelectionChangeEvent} from './editor-components/editor-events';
 
 const {t} = useI18n();
+const store = useStore();
+const {name} = storeToRefs(store);
 
 const editTxt = ref<InstanceType<typeof YTextEdit>>();
 
@@ -74,8 +82,10 @@ awareness.on('update', (update: AwarenessUpdate) => {
       console.log(`awareness ${u}:`, s);
       if (editTxt.value && s.selection) {
         const sel = s.selection;
+        const name = s.name || 'unknown';
         editTxt.value.setSelection(
           `${u}`,
+          name,
           sel.start !== null && sel.start >= 0 ? sel.start : null,
           sel.end !== null && sel.end >= 0 ? sel.end : null,
         );
@@ -86,7 +96,7 @@ awareness.on('update', (update: AwarenessUpdate) => {
     .forEach((u: number) => {
       console.log(`awareness remove ${u}`);
       if (editTxt.value) {
-        editTxt.value.setSelection(`${u}`, null, null);
+        editTxt.value.setSelection(`${u}`, '', null, null);
       }
     });
 });
@@ -117,8 +127,9 @@ wsProvider.on('sync', (synced) => {
 });
 
 onMounted(() => {
-  console.log('XXX');
+  awareness.setLocalStateField('name', name.value);
 });
+watch(name, (name) => awareness.setLocalStateField('name', name));
 
 const onTextSelectionChange = (change: TextSelectionChangeEvent) => {
   console.log('onTextSelectionChange:', change);
