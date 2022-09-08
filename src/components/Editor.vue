@@ -1,5 +1,15 @@
 <template lang="pug">
 .editor
+  .d-flex.justify-content-center.align-items-center.flex-column
+    .form-check
+      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='editorDebug')
+      label.form-check-label(for='editor-debug') Editor debug
+    .form-check
+      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='rectDupCheck')
+      label.form-check-label(for='editor-debug') Collapse rect dupes
+    .form-check
+      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='mouseInfo')
+      label.form-check-label(for='editor-debug') Include mouse
   .d-flex.justify-content-center
     .before.m-1 BEFORE
     YTextEdit(
@@ -12,8 +22,10 @@
     .after.m-1 AFTER
   .d-flex.justify-content-center
     .before.m-1 BEFORE
-    EventLogger(style='width: 20ch;')
+    EventLogger(style='width: 20ch;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
     .after.m-1 AFTER
+  .d-flex.justify-content-center
+    p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping.
 </template>
 <script lang="ts">
 interface AwarenessInfo {
@@ -38,6 +50,10 @@ import type {TextSelectionChangeEvent} from './editor-components/editor-events';
 const {t} = useI18n();
 
 const editTxt = ref<InstanceType<typeof YTextEdit>>();
+
+const editorDebug = ref(false);
+const rectDupCheck = ref(false);
+const mouseInfo = ref(true);
 
 const doc = new Y.Doc();
 let map: Y.Map<any> | undefined;

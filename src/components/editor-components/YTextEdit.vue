@@ -410,6 +410,7 @@ function updateCaretPosition(s: SelectionData) {
   const l = r.left - er.left - 1;
   s.ol.style.top = `${r.top - er.top}px`;
   s.ol.style.left = `${l}px`;
+  s.ol.style.height = `${r.height}px`;
   if (s.start !== s.end) {
     s.ol.style.width = `${r.width}px`;
     s.ol.style.opacity = `0.4`;
@@ -435,7 +436,6 @@ defineExpose({
   background-color: rgb(255, 97, 97);
   opacity: 0.4;
   z-index: 500;
-  min-height: 20px;
   display: none;
   pointer-events: none;
 }
