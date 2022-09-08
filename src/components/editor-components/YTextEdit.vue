@@ -286,6 +286,11 @@ onMounted(() => {
 });
 onBeforeUnmount(() => {
   document.removeEventListener('selectionchange', selChange);
+  emit('text-selection-change', {
+    cid: props.cid,
+    start: -1,
+    end: -1,
+  });
 });
 
 onUpdated(() => {
