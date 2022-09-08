@@ -349,7 +349,7 @@ const onComposition = (e: CompositionEvent) => {
 
 const colors = [
   'rgb(255, 97, 97)',
-  'rgb(97, 255, 97)',
+  'rgb(76, 186, 64)',
   'rgb(152, 152, 255)',
   'rgb(250, 148, 31)',
   'rgb(193, 78, 250)',

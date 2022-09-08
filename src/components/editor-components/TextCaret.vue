@@ -27,6 +27,7 @@ function updateCaretPosition(
   ol.value.style.top = `${r.top - er.top}px`;
   ol.value.style.left = `${l}px`;
   ol.value.style.height = `${r.height}px`;
+  cd.value.style.height = `${r.height}px`;
   if (s.start !== s.end) {
     cd.value.style.width = `${r.width}px`;
     cd.value.style.opacity = `0.4`;
