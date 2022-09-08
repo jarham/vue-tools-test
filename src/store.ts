@@ -83,6 +83,7 @@ export const useStore = defineStore('main', {
       locale: string,
       referenceLocale: string,
       theme?: string | null,
+      name?: string | null,
     ) {
       this.$patch((state) => {
         state.locales = [...locales];
@@ -93,7 +94,7 @@ export const useStore = defineStore('main', {
         } else {
           state.theme = null;
         }
-        state.name = randomName();
+        state.name = typeof name === 'string' ? name : randomName();
       });
     },
   },

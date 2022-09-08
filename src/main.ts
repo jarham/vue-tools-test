@@ -22,7 +22,7 @@ const i18n = createI18n({
 const router = createRouter();
 const app = createApp(App).use(pinia).use(i18n).use(router);
 const store = useStore();
-const {theme} = storeToRefs(store);
+const {theme, name} = storeToRefs(store);
 let mounted = false;
 
 function mountApp() {
@@ -56,6 +56,9 @@ watch(theme, (theme) => {
   Cookies.set('vtt-theme', theme);
   console.log('theme set');
 });
+watch(name, (name) => {
+  Cookies.set('vtt-name', name);
+});
 
 const initTheme = (() => {
   const theme = Cookies.get('vtt-theme');
@@ -65,11 +68,20 @@ const initTheme = (() => {
   Cookies.remove('vtt-theme');
   return undefined;
 })();
+const initName = (() => {
+  const name = Cookies.get('vtt-name');
+  if (typeof name === 'string') {
+    return name;
+  }
+  Cookies.remove('vtt-name');
+  return undefined;
+})();
 store.initStore(
   Object.keys(messages),
   i18nConfig.referenceLocale,
   i18nConfig.referenceLocale,
   initTheme,
+  initName,
 );
 
 if (!initTheme) {
