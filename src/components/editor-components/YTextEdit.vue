@@ -10,14 +10,16 @@
     ref='editor'
   ) {{ text ? text : '' }}
   template(
-    v-for='(v, k) in selections'
+    v-for='(v, k) in selections' :key='v.id'
   )
-    .position-absolute.y-caret(:ref='(e: HTMLDivElement | null) => selRef(e, v)')
+    TextCaret(:ref='(e: InstanceType<typeof TextCaret> | null) => selRef(e, v)')
 </template>
 
 <script setup lang="ts">
 import {onBeforeUnmount, onMounted, onUpdated, ref, watch} from 'vue';
 import type {TextSelectionChangeEvent} from './editor-events';
+import type {SelectionData} from './common';
+import TextCaret from './TextCaret.vue';
 import * as Y from 'yjs';
 
 // Copy paste from Y
@@ -345,17 +347,6 @@ const onComposition = (e: CompositionEvent) => {
   }
 };
 
-interface SelectionData {
-  id: string;
-  name: string;
-  start: number;
-  end: number;
-  color: string;
-  ol: HTMLDivElement | null;
-  cd: HTMLDivElement | null;
-  nd: HTMLDivElement | null;
-}
-
 const colors = [
   'rgb(255, 97, 97)',
   'rgb(97, 255, 97)',
@@ -385,77 +376,42 @@ function setSelection(
         name,
         start,
         end,
-        ol: null,
-        cd: null,
-        nd: null,
         color: colors[colorIndex],
       };
       colorIndex = (colorIndex + 1) % colors.length;
+      sels[id] = sel;
     } else {
       sel.name = name;
       sel.start = start;
       sel.end = end;
     }
-    sels[id] = sel;
-    updateCaretPosition(sel);
+    const d = carets.get(sel.id);
+    if (d) {
+      updateCaretPosition(d, sel);
+    }
   }
 }
 
-const selRef = (d: HTMLDivElement | null, s: SelectionData) => {
+const carets = new Map<string, InstanceType<typeof TextCaret>>();
+const selRef = (d: InstanceType<typeof TextCaret> | null, s: SelectionData) => {
   console.log('selRef:', s, d);
   if (d) {
-    s.ol = d;
-    s.cd = document.createElement('div');
-    s.nd = document.createElement('div');
-    s.cd.classList.add('y-caret-indicator');
-    s.cd.style.backgroundColor = s.color;
-    s.nd.classList.add('y-caret-name');
-    s.nd.style.backgroundColor = s.color;
-    s.ol.appendChild(s.cd);
-    s.ol.appendChild(s.nd);
+    carets.set(s.id, d);
+    updateCaretPosition(d, s);
   } else {
-    if (s.ol) {
-      s.ol.style.top = '0';
-      s.ol.style.left = '0';
-      s.ol.style.display = 'none';
-      s.ol.remove();
-    }
-    if (s.cd) s.cd.remove();
-    if (s.nd) s.nd.remove();
-    s.ol = null;
-    s.cd = null;
-    s.nd = null;
+    carets.delete(s.id);
   }
-  updateCaretPosition(s);
 };
 
-function updateCaretPosition(s: SelectionData) {
-  if (!s.ol || !s.cd || !s.nd || !editor.value) return;
-  const rn = document.createRange();
+function updateCaretPosition(
+  d: InstanceType<typeof TextCaret>,
+  s: SelectionData,
+) {
+  if (!editor.value) return;
   const txtNode = editor.value.childNodes[0];
   if (!txtNode) return;
-  if (txtNode.textContent === null) return;
-  if (s.start > txtNode.textContent.length) return;
-  if (s.end > txtNode.textContent.length) return;
   const er = editor.value.getBoundingClientRect();
-  rn.setStart(txtNode, s.start);
-  rn.setEnd(txtNode, s.end);
-  const r = rn.getBoundingClientRect();
-  console.log(`updateCaretPosition: `, rn, r, s);
-  const l = r.left - er.left - 1;
-  s.ol.style.top = `${r.top - er.top}px`;
-  s.ol.style.left = `${l}px`;
-  s.ol.style.height = `${r.height}px`;
-  if (s.start !== s.end) {
-    s.cd.style.width = `${r.width}px`;
-    s.cd.style.opacity = `0.4`;
-  } else {
-    s.cd.style.removeProperty('width');
-    s.cd.style.opacity = `0.5`;
-  }
-  s.nd.textContent = s.name;
-  s.nd.style.bottom = `${r.height}px`;
-  s.ol.style.display = 'inline-block';
+  d.updateCaretPosition(s, er, txtNode);
 }
 
 defineExpose({
