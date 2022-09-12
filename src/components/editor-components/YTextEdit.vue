@@ -20,8 +20,6 @@
 <script setup lang="ts">
 import {onBeforeUnmount, onMounted, onUpdated, ref, watch} from 'vue';
 import type {TextSelectionChangeEvent} from './editor-events';
-import type {SelectionData} from './common';
-import TextCaret from './TextCaret.vue';
 import * as Y from 'yjs';
 import {useYCursors} from '../../vue-plugins/YCursors';
 import type {TextCursor} from '../../vue-plugins/YCursors';
@@ -66,13 +64,6 @@ watch(
         applyDelta(evt.delta, !tr.origin);
       });
       text.value = ytext.toJSON();
-      // setInterval(() => {
-      //   const txtNode =
-      //     document.querySelector<HTMLDivElement>('.editable')?.childNodes[0];
-      //   if (txtNode) {
-      //     console.log('txtNode:', txtNode);
-      //   }
-      // }, 2000);
     } else {
       text.value = undefined;
     }
@@ -115,21 +106,6 @@ const applyDelta = (da: Delta[], me: boolean) => {
         if ((me && (!end || pos <= end)) || (!me && pos < end)) {
           end += d.insert.length;
         }
-        // if (start < end) {
-        //   if (pos <= start) {
-        //     r.setEnd(r.endContainer, end + d.insert.length);
-        //     r.setStart(r.startContainer, start + d.insert.length);
-        //   } else if (pos < end) {
-        //     r.setEnd(r.endContainer, end + d.insert.length);
-        //   }
-        // } else {
-        //   if (pos <= end) {
-        //     r.setStart(r.startContainer, start + d.insert.length);
-        //     r.setEnd(r.endContainer, end + d.insert.length);
-        //   } else if (pos < end) {
-        //     r.setStart(r.startContainer, start + d.insert.length);
-        //   }
-        // }
       }
       pos += d.insert.length;
     } else if (typeof d.delete === 'number') {
@@ -168,15 +144,6 @@ const applyDelta = (da: Delta[], me: boolean) => {
     )}, start=${start}, end=${end}, range=`,
     r,
   );
-  // if (sel && editor.value) {
-  //   const rn = document.createRange();
-
-  //   rn.setStart(editor.value.childNodes[0], start);
-  //   rn.setEnd(editor.value.childNodes[0], end);
-  //   sel.removeAllRanges();
-  //   sel.addRange(rn);
-  //   console.log('new range', rn);
-  // }
 };
 
 function getRangeInEditor(): Range | null {
@@ -197,18 +164,14 @@ const onBeforeInput = (e: InputEvent) => {
   const tr = e.getTargetRanges()[0];
   const r = tr || rr || null;
 
-  // console.log('before collapse:', r);
-  // r.collapse();
-  // console.log('after collapse:', r);
-  // console.log(r);
   const t = e.target as HTMLInputElement;
-  console.log('beforeinput', r?.startOffset);
-  console.log('beforeinput', r?.endOffset);
-  console.log('beforeinput', tr?.startOffset);
-  console.log('beforeinput', tr?.endOffset);
-  console.log('beforeinput, e.inputType', e.inputType);
-  console.log('beforeinput', e);
-  console.log('beforeinput', e.getTargetRanges());
+  // console.log('beforeinput', r?.startOffset);
+  // console.log('beforeinput', r?.endOffset);
+  // console.log('beforeinput', tr?.startOffset);
+  // console.log('beforeinput', tr?.endOffset);
+  // console.log('beforeinput, e.inputType', e.inputType);
+  // console.log('beforeinput', e);
+  // console.log('beforeinput', e.getTargetRanges());
   // console.log('beforeinput', e.getTargetRanges());
   // console.log('beforeinput', e.dataTransfer);
   const start = r?.startOffset || 0;
@@ -266,12 +229,6 @@ let selStart = -1;
 let selEnd = -1;
 const selChange = () => {
   if (!editor.value || composing || !editorWrap.value) return;
-  // const contained =
-  //   editor.value.childNodes[0] &&
-  //   sel.containsNode(editor.value.childNodes[0], true);
-  // const contained =
-  //   editor.value.contains(sel.anchorNode) &&
-  //   editor.value.contains(sel.focusNode);
   const r = getRangeInEditor();
   const oldStart = selStart;
   const oldEnd = selEnd;
@@ -414,7 +371,6 @@ let colorIndex = 0;
 
 const userCursors = new Map<string, TextCursor>();
 function redrawCursors() {
-  console.log('REDRAW CURSORS');
   if (!editor.value || !editorWrap.value) return;
   const txtNode = editor.value.childNodes[0];
   if (!txtNode) return;
@@ -463,56 +419,6 @@ function setSelection(
       ],
     });
   }
-
-  // const sels = selections.value;
-  // console.log(`setSelection:`, id, name, start, end, sels);
-  // if (!sels) return;
-  // let sel = sels[id];
-  // if (start === null || end === null) {
-  //   delete sels[id];
-  // } else {
-  //   if (!sel) {
-  //     sel = {
-  //       id,
-  //       name,
-  //       start,
-  //       end,
-  //       color: colors[colorIndex],
-  //     };
-  //     colorIndex = (colorIndex + 1) % colors.length;
-  //     sels[id] = sel;
-  //   } else {
-  //     sel.name = name;
-  //     sel.start = start;
-  //     sel.end = end;
-  //   }
-  //   const d = carets.get(sel.id);
-  //   if (d) {
-  //     updateCaretPosition(d, sel);
-  //   }
-  // }
-}
-
-const carets = new Map<string, InstanceType<typeof TextCaret>>();
-const selRef = (d: InstanceType<typeof TextCaret> | null, s: SelectionData) => {
-  console.log('selRef:', s, d);
-  if (d) {
-    carets.set(s.id, d);
-    updateCaretPosition(d, s);
-  } else {
-    carets.delete(s.id);
-  }
-};
-
-function updateCaretPosition(
-  d: InstanceType<typeof TextCaret>,
-  s: SelectionData,
-) {
-  if (!editor.value) return;
-  const txtNode = editor.value.childNodes[0];
-  if (!txtNode) return;
-  const er = editor.value.getBoundingClientRect();
-  d.updateCaretPosition(s, er, txtNode);
 }
 
 defineExpose({

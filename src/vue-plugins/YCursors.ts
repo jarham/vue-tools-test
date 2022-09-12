@@ -181,7 +181,6 @@ export class TextCursor extends Cursor<{
     elems.curCaret.style.backgroundColor = color;
 
     elems.curName.textContent = name;
-    // elems.curName.style.bottom = `${r.height}px`;
   }
 
   private discardCursorElems(elems: TextCursorElems): void {

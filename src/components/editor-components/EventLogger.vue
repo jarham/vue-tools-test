@@ -125,7 +125,7 @@ const onMouseEvent = (e: MouseEvent) => {
     mx = -1;
     my = -1;
   }
-  console.log(`${e.type}: ${mx}, ${my}`);
+  // console.log(`${e.type}: ${mx}, ${my}`);
   refreshMouse();
 };
 

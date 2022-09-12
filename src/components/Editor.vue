@@ -44,7 +44,6 @@ interface AwarenessUpdate {
 </script>
 <script setup lang="ts">
 import {onMounted, ref, watch} from 'vue';
-import {useI18n} from 'vue-i18n';
 import {useStore} from '../store';
 import {storeToRefs} from 'pinia';
 import * as Y from 'yjs';
@@ -53,7 +52,6 @@ import YTextEdit from './editor-components/YTextEdit.vue';
 import EventLogger from './editor-components/EventLogger.vue';
 import type {TextSelectionChangeEvent} from './editor-components/editor-events';
 
-const {t} = useI18n();
 const store = useStore();
 const {name} = storeToRefs(store);
 
@@ -104,7 +102,7 @@ wsProvider.on('status', (event) => {
   console.log(event.status); // logs "connected" or "disconnected"
 });
 wsProvider.on('sync', (synced) => {
-  console.log('synced:', synced); // logs "connected" or "disconnected"
+  console.log('synced:', synced);
   if (synced) {
     map = doc.getMap();
     if (!map.has('title')) {
