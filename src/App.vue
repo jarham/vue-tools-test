@@ -58,5 +58,33 @@ body {
   right: 0;
   background-color: rgba(0, 0, 0, 0.7);
   white-space: pre-wrap;
-  z-index: 10100;}
+  z-index: 10100;
+}
+.y-cursor-wrap {
+  display: inline-block;
+  position: absolute;
+  z-index: 500;
+  display: none;
+  pointer-events: none;
+  .y-cursor-caret {
+    min-width: 2px;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0.4;
+  }
+  .y-cursor-name {
+    display: inline-block;
+    padding: 1px;
+    border-bottom-right-radius: 2px;
+    border-top-right-radius: 2px;
+    opacity: 8;
+    position: absolute;
+    color: white;
+    font-size: xx-small;
+    bottom: 0;
+    white-space: pre;
+  }
+}
 </style>

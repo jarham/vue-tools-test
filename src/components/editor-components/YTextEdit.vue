@@ -1,18 +1,20 @@
 <template lang="pug">
 .y-component.y-text-edit.px-2.py-1.rounded.border.editable.position-relative(
-    :contenteditable='typeof text === "string" ? "true" : "false"'
-    style='min-width: 1ch;'
-    @beforeinput='onBeforeInput'
-    @input='onInput'
-    @compositionstart='onComposition'
-    @compositionupdate='onComposition'
-    @compositionend='onComposition'
-    ref='editor'
-  ) {{ text ? text : '' }}
-  template(
-    v-for='(v, k) in selections' :key='v.id'
-  )
-    TextCaret(:ref='(e: InstanceType<typeof TextCaret> | null) => selRef(e, v)')
+  :class='{active: active}'
+  ref='editorWrap'
+  @focusin='active=true'
+  @focusout='active=false'
+)
+  .y-text-edit-editor(
+      :contenteditable='typeof text === "string" ? "true" : "false"'
+      style='min-width: 1ch;'
+      @beforeinput='onBeforeInput'
+      @input='onInput'
+      @compositionstart='onComposition'
+      @compositionupdate='onComposition'
+      @compositionend='onComposition'
+      ref='editor'
+    ) {{ text ? text : '' }}
 </template>
 
 <script setup lang="ts">
@@ -21,6 +23,8 @@ import type {TextSelectionChangeEvent} from './editor-events';
 import type {SelectionData} from './common';
 import TextCaret from './TextCaret.vue';
 import * as Y from 'yjs';
+import {useYCursors} from '../../vue-plugins/YCursors';
+import type {TextCursor} from '../../vue-plugins/YCursors';
 
 // Copy paste from Y
 interface Delta {
@@ -37,16 +41,21 @@ interface Delta {
 const props = defineProps<{
   cid: string;
   ytext?: Y.Text;
+  autofocus?: boolean;
 }>();
 const emit = defineEmits<{
   (e: 'text-selection-change', change: TextSelectionChangeEvent): void;
 }>();
 
-const text = ref<string | undefined>();
+const text = ref<string | undefined>('');
 const editor = ref<HTMLDivElement>();
+const editorWrap = ref<HTMLDivElement>();
+const yCursors = useYCursors();
+const active = ref(false);
 let start = -1;
 let end = -1;
 let txtModded = false;
+let lastScrollLeft = -1;
 
 watch(
   () => props.ytext,
@@ -136,6 +145,23 @@ const applyDelta = (da: Delta[], me: boolean) => {
     }
   });
   text.value = txt;
+
+  // Hack to get cursor back to visible when writing to the end
+  // of text
+  if (me) {
+    const sel = document.getSelection();
+    const mr = getRangeInEditor();
+    if (sel && mr && editor.value) {
+      console.log(
+        'SEL RANGE HACK',
+        editor.value.scrollLeft,
+        editor.value.scrollWidth,
+      );
+      sel.removeAllRanges();
+      sel.addRange(mr.cloneRange());
+    }
+  }
+
   console.log(
     `applyDelta exit, me=${me}, da=${JSON.stringify(
       da,
@@ -239,7 +265,7 @@ const onInput = (e: InputEvent) => {
 let selStart = -1;
 let selEnd = -1;
 const selChange = () => {
-  if (!editor.value || composing) return;
+  if (!editor.value || composing || !editorWrap.value) return;
   // const contained =
   //   editor.value.childNodes[0] &&
   //   sel.containsNode(editor.value.childNodes[0], true);
@@ -249,6 +275,9 @@ const selChange = () => {
   const r = getRangeInEditor();
   const oldStart = selStart;
   const oldEnd = selEnd;
+  let rangeVisible = false;
+  let r1: DOMRect;
+  let r2: DOMRect;
 
   if (!r) {
     selStart = -1;
@@ -260,6 +289,24 @@ const selChange = () => {
     selEnd = r.endOffset;
     start = r.startOffset;
     end = r.endOffset;
+
+    r1 = r.getBoundingClientRect();
+    r2 = editorWrap.value.getBoundingClientRect();
+
+    rangeVisible =
+      r1.right > r2.left &&
+      r1.left < r2.right &&
+      r1.bottom > r2.top &&
+      r1.top < r2.bottom;
+    if (r1.left > r2.right) {
+      const d = r1.left - r2.right;
+      console.log('FIX SCROLL', editorWrap.value.scrollLeft, d);
+      editorWrap.value.scrollLeft += d;
+      console.log('FIX SCROLL', editorWrap.value.scrollLeft, d);
+    } else if (r1.right < r2.left) {
+      // const d = r1.left - r2.right;
+      // if (editorWrap.value.scrollLeft < d) editorWrap.value.scrollLeft = d;
+    }
   }
   // console.log(
   //   'selChange',
@@ -270,7 +317,7 @@ const selChange = () => {
   //   'focus:',
   //   sel.focusNode,
   // );
-  console.log('selChange', selStart, selEnd, r);
+  console.log('selChange', selStart, selEnd, rangeVisible, r1, r2, r);
   if (oldStart !== selStart || oldEnd !== selEnd) {
     console.log('selChange emit', selStart, selEnd);
     emit('text-selection-change', {
@@ -280,14 +327,23 @@ const selChange = () => {
       oldStart,
       oldEnd,
     });
+    if (lastScrollLeft >= 0 && lastScrollLeft !== editorWrap.value.scrollLeft) {
+      redrawCursors();
+    }
+    lastScrollLeft = editorWrap.value.scrollLeft;
   }
 };
 
 onMounted(() => {
   document.addEventListener('selectionchange', selChange);
+  window.addEventListener('resize', redrawCursors);
+  if (editor.value && props.autofocus) {
+    editor.value.focus();
+  }
 });
 onBeforeUnmount(() => {
   document.removeEventListener('selectionchange', selChange);
+  window.removeEventListener('resize', redrawCursors);
   emit('text-selection-change', {
     cid: props.cid,
     start: -1,
@@ -356,40 +412,85 @@ const colors = [
 ];
 let colorIndex = 0;
 
-const selections = ref<{[key: string]: SelectionData}>(Object.create(null));
+const userCursors = new Map<string, TextCursor>();
+function redrawCursors() {
+  console.log('REDRAW CURSORS');
+  if (!editor.value || !editorWrap.value) return;
+  const txtNode = editor.value.childNodes[0];
+  if (!txtNode) return;
+  userCursors.forEach((userCursor) =>
+    userCursor.redraw({startNode: txtNode, endNode: txtNode}),
+  );
+}
 function setSelection(
   id: string,
   name: string,
   start: number | null,
   end: number | null,
 ) {
-  const sels = selections.value;
-  console.log(`setSelection:`, id, name, start, end, sels);
-  if (!sels) return;
-  let sel = sels[id];
-  if (start === null || end === null) {
-    delete sels[id];
-  } else {
-    if (!sel) {
-      sel = {
-        id,
-        name,
-        start,
-        end,
+  if (!editor.value || !editorWrap.value) return;
+  const userCursor = ((editor: HTMLDivElement) => {
+    let uc = userCursors.get(id);
+    if (!uc) {
+      uc = yCursors.createTextCursor({
+        userId: id,
+        target: editor,
         color: colors[colorIndex],
-      };
+        name,
+      });
       colorIndex = (colorIndex + 1) % colors.length;
-      sels[id] = sel;
-    } else {
-      sel.name = name;
-      sel.start = start;
-      sel.end = end;
+      userCursors.set(id, uc);
     }
-    const d = carets.get(sel.id);
-    if (d) {
-      updateCaretPosition(d, sel);
-    }
+    return uc;
+  })(editorWrap.value);
+
+  if (start === null || end === null) {
+    userCursor.discard();
+    userCursors.delete(id);
+  } else {
+    const txtNode = editor.value.childNodes[0];
+    if (!txtNode) return;
+
+    userCursor.update({
+      name,
+      ranges: [
+        {
+          startNode: txtNode,
+          startOffset: start,
+          endNode: txtNode,
+          endOffset: end,
+        },
+      ],
+    });
   }
+
+  // const sels = selections.value;
+  // console.log(`setSelection:`, id, name, start, end, sels);
+  // if (!sels) return;
+  // let sel = sels[id];
+  // if (start === null || end === null) {
+  //   delete sels[id];
+  // } else {
+  //   if (!sel) {
+  //     sel = {
+  //       id,
+  //       name,
+  //       start,
+  //       end,
+  //       color: colors[colorIndex],
+  //     };
+  //     colorIndex = (colorIndex + 1) % colors.length;
+  //     sels[id] = sel;
+  //   } else {
+  //     sel.name = name;
+  //     sel.start = start;
+  //     sel.end = end;
+  //   }
+  //   const d = carets.get(sel.id);
+  //   if (d) {
+  //     updateCaretPosition(d, sel);
+  //   }
+  // }
 }
 
 const carets = new Map<string, InstanceType<typeof TextCaret>>();
@@ -421,28 +522,20 @@ defineExpose({
 
 <style lang="scss">
 .y-text-edit {
-  overflow-x: hidden;
-  white-space: nowrap;
-}
-.y-caret {
-  min-width: 2px;
-  background-color: rgb(255, 97, 97);
-  z-index: 500;
-  display: none;
-  pointer-events: none;
-  .y-caret-indicator {
-    position: absolute;
-    top: 0;
-    opacity: 0.4;
+  // Can't use overflow hidden because that prevents scrolling
+  // when mouse selecting (ie. "paiting" text over the element borders).
+  overflow: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
   }
-  .y-caret-name {
-    padding: 1px;
-    border-bottom-right-radius: 2px;
-    border-top-right-radius: 2px;
-    opacity: 8;
-    position: absolute;
-    color: white;
-    font-size: xx-small;
+  &.active {
+    outline: auto;
+  }
+  .y-text-edit-editor {
+    white-space: pre;
+    outline: none;
   }
 }
 </style>

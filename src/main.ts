@@ -7,6 +7,7 @@ import {useStore} from './store';
 import i18nConfig from './translations/_config.yaml';
 import Cookies from 'js-cookie';
 import createRouter from './router';
+import {createYCursors} from './vue-plugins/YCursors';
 
 const themeCssId = 'vtt-theme';
 
@@ -18,9 +19,10 @@ const i18n = createI18n({
   missingWarn: i18nConfig.missingWarn,
   messages,
 });
+const yCursors = createYCursors();
 
 const router = createRouter();
-const app = createApp(App).use(pinia).use(i18n).use(router);
+const app = createApp(App).use(pinia).use(i18n).use(router).use(yCursors);
 const store = useStore();
 const {theme, name} = storeToRefs(store);
 let mounted = false;
