@@ -35,6 +35,8 @@ body {
   min-height: 100vh;
 }
 .s-rect {
+  user-select: none;
+  pointer-events: none;
   border: 1px red solid;
   pointer-events: none;
   background-color: rgba(0, 0, 0, 0.7);
@@ -45,6 +47,8 @@ body {
   }
 }
 .s-box-info {
+  user-select: none;
+  pointer-events: none;
   font-size: x-small;
   top: 0;
   left: 0;
@@ -53,6 +57,8 @@ body {
   z-index: 10100;
 }
 .mouse-info {
+  user-select: none;
+  pointer-events: none;
   font-size: x-small;
   bottom: 0;
   right: 0;
