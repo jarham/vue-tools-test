@@ -25,11 +25,8 @@
     )
     .after.m-1 AFTER
   .d-flex.justify-content-center
-    .before.m-1 BEFORE
-    EventLogger(style='width: 20ch;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
-    .after.m-1 AFTER
-  .d-flex.justify-content-center
     p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping.
+  EventLogger(style='width: 20ch;display: none;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
 </template>
 <script lang="ts">
 interface AwarenessInfo {
@@ -101,11 +98,27 @@ awareness.on('update', (update: AwarenessUpdate) => {
 wsProvider.on('status', (event) => {
   console.log(event.status); // logs "connected" or "disconnected"
 });
+let tries = 0;
+doc.on('error', (e) => console.error(e));
 wsProvider.on('sync', (synced) => {
   console.log('synced:', synced);
   if (synced) {
     map = doc.getMap();
+
+    console.log('whole doc', doc.toJSON());
+
     if (!map.has('title')) {
+      // Ugly hack to workaround _server_ bug where the first client
+      // connected doesn't get persisted document: Just dis- and re-
+      // connect after a while.
+      if (tries === -1) {
+        wsProvider.disconnect();
+        tries++;
+        setTimeout(() => wsProvider.connect(), 2000);
+        return;
+      }
+      tries = 0;
+
       console.log('New Title');
       title.value = new Y.Text('untitled');
       map.set('title', title.value);
@@ -120,7 +133,7 @@ wsProvider.on('sync', (synced) => {
     }
     let arr = map.get('items') as Y.Array<any>;
     arr.push([`${arr.length}`]);
-    console.log('map:', map.toJSON());
+    console.log('map:', map.toJSON(), map);
   }
 });
 
