@@ -302,6 +302,8 @@ onMounted(() => {
   }
 });
 onBeforeUnmount(() => {
+  userCursors.forEach((userCursor) => userCursor.discard());
+  userCursors.clear();
   document.removeEventListener('selectionchange', selChange);
   window.removeEventListener('resize', redrawCursors);
   emit('text-selection-change', {
