@@ -188,7 +188,10 @@ const onBeforeInput = (e: InputEvent) => {
       }
       props.ytext.insert(
         start,
-        e.data || e.dataTransfer?.getData('text/plain') || '',
+        (e.data || e.dataTransfer?.getData('text/plain') || '').replaceAll(
+          /\r?\n\r?/g,
+          ' ',
+        ),
       );
       e.preventDefault();
       break;
@@ -233,8 +236,8 @@ const selChange = () => {
   const oldStart = selStart;
   const oldEnd = selEnd;
   let rangeVisible = false;
-  let r1: DOMRect;
-  let r2: DOMRect;
+  let r1: DOMRect | undefined = undefined;
+  let r2: DOMRect | undefined = undefined;
 
   if (!r) {
     selStart = -1;

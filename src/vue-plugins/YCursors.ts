@@ -13,7 +13,7 @@ export interface TextCursorOpts extends CursorOpts {
   container?: HTMLElement;
 }
 
-interface CursorOps {
+interface CursorOps<T> {
   discard(c: Cursor<T>): void;
 }
 
@@ -26,7 +26,7 @@ abstract class Cursor<T = void> {
 
   constructor(
     private readonly _cursorId: string,
-    opts: CursorOpts & CursorOps,
+    opts: CursorOpts & CursorOps<T>,
   ) {
     this._userId = opts.userId;
     this._color = opts.color;
@@ -89,17 +89,22 @@ interface TextCursorElems {
   curCaret: HTMLDivElement;
 }
 
-export class TextCursor extends Cursor<{
+interface TextCursorData {
   startNode: ChildNode;
   endNode: ChildNode;
-}> {
+}
+
+export class TextCursor extends Cursor<TextCursorData> {
   private readonly target: HTMLElement;
   private readonly container: HTMLElement;
   private readonly active: TextCursorElems[] = [];
   private readonly passive: TextCursorElems[] = [];
   private lastUpdate: TextCursorUpdate | null = null;
 
-  constructor(cursorId: string, opts: TextCursorOpts & CursorOps) {
+  constructor(
+    cursorId: string,
+    opts: TextCursorOpts & CursorOps<TextCursorData>,
+  ) {
     super(cursorId, opts);
 
     this.target = opts.target;
@@ -242,7 +247,7 @@ export class YCursors {
   private cursorsByUserId = new Map<string, Cursor[]>();
   private cursorById = new Map<string, Cursor>();
 
-  private storeCursor(c: Cursor, userId: string) {
+  private storeCursor(c: Cursor<any>, userId: string) {
     if (!this.cursorsByUserId.has(userId)) {
       this.cursorsByUserId.set(userId, [c]);
     } else {
@@ -251,7 +256,7 @@ export class YCursors {
     this.cursorById.set(c.cursorId, c);
   }
 
-  private discard(c: Cursor): void {
+  private discard(c: Cursor<any>): void {
     const userCursors = this.cursorsByUserId.get(c.userId);
     if (userCursors) {
       for (let i = userCursors.length - 1; i >= 0; i--) {

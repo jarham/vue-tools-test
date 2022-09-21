@@ -1,7 +1,7 @@
 <template lang="pug">
 .editor
   .d-flex.justify-content-center.align-items-center.flex-column
-    .input-group.justify-content-center.align-items-center
+    .input-group.input-group-sm.justify-content-center.align-items-center
       span.input-group-text You are
       input.form-control(type=text v-model='name' placeholder='unknown' style='max-width: 40ch;')
       button.btn.btn-outline-secondary(@click='store.randomName()') Randomize
@@ -9,23 +9,23 @@
       input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='editorDebug')
       label.form-check-label(for='editor-debug') Editor debug
     .form-check
-      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='rectDupCheck')
-      label.form-check-label(for='editor-debug') Collapse rect dupes
+      input.form-check-input(type='checkbox' value='' id='debug-dupe-check' v-model='rectDupCheck')
+      label.form-check-label(for='debug-dupe-check') De-dupe selection rects
     .form-check
-      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='mouseInfo')
-      label.form-check-label(for='editor-debug') Include mouse
-  .d-flex.justify-content-center
-    .before.m-1 BEFORE
+      input.form-check-input(type='checkbox' value='' id='debug-mouse-info' v-model='mouseInfo')
+      label.form-check-label(for='debug-mouse-info') Include mouse
+  .d-flex.justify-content-center.align-items-start.flex-wrap
+    small.before.text-nowrap.m-1.mt-2 1 line edit -&gt;
     YTextEdit(
       cid='testedit'
       :ytext='title'
-      style='width: 20ch;'
+      style='width: 30ch;'
       @text-selection-change='onTextSelectionChange'
       ref='editTxt'
     )
-    .after.m-1 AFTER
+    small.after.text-nowrap.m-1.mt-2 &lt;-1 line edit
   .d-flex.justify-content-center
-    p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping.
+    p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping. #[small (For testing selections.)]
   EventLogger(style='width: 20ch;display: none;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
 </template>
 <script lang="ts">
@@ -61,8 +61,23 @@ const mouseInfo = ref(true);
 const doc = new Y.Doc();
 let map: Y.Map<any> | undefined;
 let title = ref<Y.Text | undefined>();
+
+// Quick'n'dirty hack to get this working on Docker compose and localhost dev.
+// Basically, we assume that localhost address includes port number and
+// keep 8080 for localhost docker tests.
+const host =
+  /:\d+$/.test(window.location.host) && !/:8080$/.test(window.location.host)
+    ? window.location.host.replace(/:\d+$/, ':1234')
+    : window.location.host;
+const path =
+  /:\d+$/.test(window.location.host) && !/:8080$/.test(window.location.host)
+    ? ''
+    : 'yjsws';
+
 const wsProvider = new WebsocketProvider(
-  'ws://localhost:1234',
+  `${
+    window.location.protocol.startsWith('https') ? 'wss' : 'ws'
+  }://${host}/${path}`,
   'my-roomname',
   doc,
 );
@@ -95,12 +110,12 @@ awareness.on('update', (update: AwarenessUpdate) => {
       }
     });
 });
-wsProvider.on('status', (event) => {
+wsProvider.on('status', (event: any) => {
   console.log(event.status); // logs "connected" or "disconnected"
 });
 let tries = 0;
 doc.on('error', (e) => console.error(e));
-wsProvider.on('sync', (synced) => {
+wsProvider.on('sync', (synced: any) => {
   console.log('synced:', synced);
   if (synced) {
     map = doc.getMap();
