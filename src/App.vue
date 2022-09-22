@@ -45,6 +45,19 @@ body {
     font-size: xx-small;
     color: red;
   }
+  &.s-rect-hilite {
+    background: repeating-linear-gradient(
+      -45deg,
+      #000a 0px,
+      #000a 2px,
+      #f006 3px,
+      #f006 5px,
+      #000a 6px
+    );
+    * {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+  }
 }
 .s-box-info {
   user-select: none;

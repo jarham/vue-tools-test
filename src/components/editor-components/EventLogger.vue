@@ -18,6 +18,7 @@ import {onBeforeUnmount, onMounted, watch} from 'vue';
 const props = defineProps<{
   debug: boolean;
   rectDupCheck: boolean;
+  rectHilite: boolean;
   mouseInfo: boolean;
 }>();
 
@@ -34,6 +35,10 @@ watch(
   () => refreshAll(),
 );
 watch(
+  () => props.rectHilite,
+  () => refreshAll(),
+);
+watch(
   () => props.mouseInfo,
   () => refreshAll(),
 );
@@ -43,8 +48,9 @@ const refreshAll = () => {
   refreshMouse();
 };
 
-const rects: HTMLDivElement[] = [];
-let selRects: DOMRect[] = [];
+// const rects: HTMLDivElement[] = [];
+type SelRect = {nRange: number; nRect: number; r: DOMRect; e?: HTMLDivElement};
+let selRects: SelRect[] = [];
 const onGenericEvent = (e: Event) => {
   console.log(`${e.type}:`, e);
   if (e.type === 'selectionchange') {
@@ -57,8 +63,8 @@ const refreshRects = () => {
   addRects();
 };
 const removeRects = () => {
-  rects.forEach((e) => e.remove());
-  rects.splice(0, rects.length);
+  selRects.forEach((sr) => sr.e && sr.e.remove());
+  selRects.splice(0, selRects.length);
 };
 const addRects = () => {
   const s = document.getSelection();
@@ -67,43 +73,47 @@ const addRects = () => {
   for (let i = 0; i < n; i++) {
     const r = s.getRangeAt(i);
     if (!r) continue;
-    selRects = Array.from(r.getClientRects()).filter(
-      (rect, i, arr) =>
-        !props.rectDupCheck ||
-        arr.findIndex(
-          (r1) =>
-            r1.bottom === rect.bottom &&
-            r1.height === rect.height &&
-            r1.left === rect.left &&
-            r1.right === rect.right &&
-            r1.top === rect.top &&
-            r1.width === rect.width &&
-            r1.x === rect.x &&
-            r1.y === rect.y,
-        ) >= i,
+    selRects.push(
+      ...Array.from(r.getClientRects())
+        .filter(
+          (rect, i, arr) =>
+            !props.rectDupCheck ||
+            arr.findIndex(
+              (r1) =>
+                r1.bottom === rect.bottom &&
+                r1.height === rect.height &&
+                r1.left === rect.left &&
+                r1.right === rect.right &&
+                r1.top === rect.top &&
+                r1.width === rect.width &&
+                r1.x === rect.x &&
+                r1.y === rect.y,
+            ) >= i,
+        )
+        .map((r, nRect) => ({r, nRange: i, nRect})),
     );
-    for (let j = 0; j < selRects.length; j++) {
-      const rc = selRects[j];
-      if (!rc) continue;
-      console.log(`  selection range ${i}, rect ${j}:`, rc);
-      const div = document.createElement('div');
-      rects.push(div);
-      div.style.top = `${rc.top + window.scrollY}px`;
-      div.style.left = `${rc.left + window.scrollX}px`;
-      div.style.width = `${rc.width}px`;
-      div.style.height = `${rc.height}px`;
-      div.classList.add(
-        's-rect',
-        'position-absolute',
-        'd-flex',
-        'justify-content-center',
-        'align-items-center',
-      );
-      const span = document.createElement('span');
-      span.textContent = `${i}/${j}`;
-      div.appendChild(span);
-      document.body.appendChild(div);
-    }
+  }
+  for (let i = 0; i < selRects.length; i++) {
+    const rc = selRects[i];
+    if (!rc) continue;
+    // console.log(`  selection range ${i}, rect ${j}:`, rc);
+    const div = document.createElement('div');
+    rc.e = div;
+    div.style.top = `${rc.r.top + window.scrollY}px`;
+    div.style.left = `${rc.r.left + window.scrollX}px`;
+    div.style.width = `${rc.r.width}px`;
+    div.style.height = `${rc.r.height}px`;
+    div.classList.add(
+      's-rect',
+      'position-absolute',
+      'd-flex',
+      'justify-content-center',
+      'align-items-center',
+    );
+    const span = document.createElement('span');
+    span.textContent = `${rc.nRect}/${rc.nRange}`;
+    div.appendChild(span);
+    document.body.appendChild(div);
   }
 };
 
@@ -158,14 +168,60 @@ const addMouse = () => {
       mouseElem.classList.add('position-fixed', 'text-danger', 's-box-info');
       document.body.appendChild(mouseElem);
     }
-    const txt = selRects
+    const txtSummary = (() => {
+      const a = [];
+      let nRange = -1;
+      let cRect = -1;
+      let tRect = 0;
+      selRects.forEach((sr) => {
+        if (props.rectHilite && sr.e) {
+          if (
+            Math.floor(sr.r.x) <= mx &&
+            Math.floor(sr.r.y) <= my &&
+            Math.ceil(sr.r.x + sr.r.width) >= mx &&
+            Math.ceil(sr.r.y + sr.r.height) >= my
+          ) {
+            !sr.e.classList.contains('s-rect-hilite') &&
+              sr.e.classList.add('s-rect-hilite');
+          } else {
+            sr.e.classList.remove('s-rect-hilite');
+          }
+        } else {
+          sr.e && sr.e.classList.remove('s-rect-hilite');
+        }
+        tRect++;
+        if (sr.nRange > nRange) {
+          if (nRange > -1) {
+            a.push(`range ${nRange}: ${cRect} rect${cRect !== 1 ? 's' : ''}`);
+          }
+          nRange = sr.nRange;
+          cRect = 1;
+        } else {
+          cRect++;
+        }
+      });
+      if (nRange > -1) {
+        a.push(`range ${nRange}: ${cRect} rect${cRect !== 1 ? 's' : ''}`);
+      }
+      if (nRange > 0) {
+        a.push(`total: ${tRect} rect${tRect !== 1 ? 's' : ''}`);
+      }
+      return a;
+    })();
+    const txtRects = selRects
       .filter(
         (r) =>
-          r.x <= mx && r.y <= my && r.x + r.width >= mx && r.y + r.height >= my,
+          Math.floor(r.r.x) <= mx &&
+          Math.floor(r.r.y) <= my &&
+          Math.ceil(r.r.x + r.r.width) >= mx &&
+          Math.ceil(r.r.y + r.r.height) >= my,
       )
-      .map((r) => `x: ${r.x}, y: ${r.y}, w: ${r.width}, h: ${r.height}`)
-      .join('\n');
-    mouseElem.textContent = txt;
+      .map(
+        (r) =>
+          `${r.nRect}/${r.nRange}: x: ${r.r.x}, y: ${r.r.y}, w: ${r.r.width}, h: ${r.r.height}`,
+      );
+    // console.log(txtSummary, txtRects, selRects);
+    mouseElem.textContent = txtSummary.concat(txtRects).join('\n');
   }
   if (mx >= 0 && props.debug && props.mouseInfo) {
     if (!mouseInfoElem) {

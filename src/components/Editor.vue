@@ -1,20 +1,32 @@
 <template lang="pug">
 .editor
   .d-flex.justify-content-center.align-items-center.flex-column
-    .input-group.input-group-sm.justify-content-center.align-items-center
+    .input-group.input-group-sm.justify-content-center.align-items-center.mb-2
       span.input-group-text You are
       input.form-control(type=text v-model='name' placeholder='unknown' style='max-width: 40ch;')
       button.btn.btn-outline-secondary(@click='store.randomName()') Randomize
-    .form-check
-      input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='editorDebug')
-      label.form-check-label(for='editor-debug') Editor debug
-    .form-check
-      input.form-check-input(type='checkbox' value='' id='debug-dupe-check' v-model='rectDupCheck')
-      label.form-check-label(for='debug-dupe-check') De-dupe selection rects
-    .form-check
-      input.form-check-input(type='checkbox' value='' id='debug-mouse-info' v-model='mouseInfo')
-      label.form-check-label(for='debug-mouse-info') Include mouse
-  .d-flex.justify-content-center.align-items-start.flex-wrap
+    .row.g-3.align-items-center.mb-2
+      .col-auto
+        .form-check
+          input.form-check-input(type='checkbox' value='' id='editor-debug' v-model='editorDebug')
+          small
+            label.form-check-label(for='editor-debug') Editor debug
+      .col-auto
+        .form-check
+          input.form-check-input(type='checkbox' value='' id='debug-dupe-check' v-model='rectDupCheck')
+          small
+            label.form-check-label(for='debug-dupe-check') Dedupe selection rects
+      .col-auto
+        .form-check
+          input.form-check-input(type='checkbox' value='' id='debug-rect-hilite' v-model='rectHilite')
+          small
+            label.form-check-label(for='debug-rect-hilite') Hilite selection rects
+      .col-auto
+        .form-check
+          input.form-check-input(type='checkbox' value='' id='debug-mouse-info' v-model='mouseInfo')
+          small
+            label.form-check-label(for='debug-mouse-info') Include mouse
+  .d-flex.justify-content-center.align-items-start.flex-wrap.mb-2
     small.before.text-nowrap.m-1.mt-2 1 line edit -&gt;
     YTextEdit(
       cid='testedit'
@@ -37,7 +49,7 @@
     small.after.text-nowrap.m-1.mt-2 &lt;-multiline edit
   .d-flex.justify-content-center
     p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping. #[small (For testing selections.)]
-  EventLogger(style='width: 20ch;display: none;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
+  EventLogger(style='width: 20ch;display: none;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :rect-hilite='rectHilite' :mouse-info='mouseInfo')
 </template>
 <script lang="ts">
 interface AwarenessInfo {
@@ -69,6 +81,7 @@ const editTxt2 = ref<InstanceType<typeof YTextEdit>>();
 
 const editorDebug = ref(false);
 const rectDupCheck = ref(false);
+const rectHilite = ref(true);
 const mouseInfo = ref(true);
 
 const doc = new Y.Doc();
