@@ -1,11 +1,11 @@
 <template lang="pug">
-.y-component.y-text-edit.px-2.py-1.rounded.border.editable.position-relative(
+.y-component.y-rich-text-edit.px-2.py-1.rounded.border.editable.position-relative(
   :class='{active: active}'
   ref='editorWrap'
   @focusin='active=true'
   @focusout='active=false'
 )
-  .y-text-edit-editor(
+  .y-rich-text-edit-editor(
       :contenteditable='typeof text === "string" ? "true" : "false"'
       style='min-width: 1ch;'
       @beforeinput='onBeforeInput'
@@ -189,10 +189,7 @@ const onBeforeInput = (e: InputEvent) => {
       }
       props.ytext.insert(
         start,
-        (e.data || e.dataTransfer?.getData('text/plain') || '').replaceAll(
-          /\r?\n\r?/g,
-          ' ',
-        ),
+        e.data || e.dataTransfer?.getData('text/plain') || '',
       );
       e.preventDefault();
       break;
@@ -212,6 +209,10 @@ const onBeforeInput = (e: InputEvent) => {
       break;
     case 'insertLineBreak':
     case 'insertParagraph':
+      if (end > start) {
+        props.ytext.delete(start, count);
+      }
+      props.ytext.insert(start, '\n');
       e.preventDefault();
       break;
     default:
@@ -428,20 +429,12 @@ defineExpose({
 </script>
 
 <style lang="scss">
-.y-text-edit {
-  // Can't use overflow hidden because that prevents scrolling
-  // when mouse selecting (ie. "paiting" text over the element borders).
-  overflow: auto;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
+.y-rich-text-edit {
   &.active {
     outline: auto;
   }
-  .y-text-edit-editor {
-    white-space: pre;
+  .y-rich-text-edit-editor {
+    white-space: pre-wrap;
     outline: none;
   }
 }

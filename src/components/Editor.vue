@@ -24,6 +24,16 @@
       ref='editTxt'
     )
     small.after.text-nowrap.m-1.mt-2 &lt;-1 line edit
+  .d-flex.justify-content-center.align-items-start.flex-wrap
+    small.before.text-nowrap.m-1.mt-2 multiline edit-&gt;
+    YRichTextEdit(
+      cid='testedit2'
+      :ytext='text'
+      style='width: 30ch;'
+      @text-selection-change='onTextSelectionChange'
+      ref='editTxt2'
+    )
+    small.after.text-nowrap.m-1.mt-2 &lt;-multiline edit
   .d-flex.justify-content-center
     p(style='max-width: 20ch;') Some text #[small with variable size] font and line wrapping. #[small (For testing selections.)]
   EventLogger(style='width: 20ch;display: none;' :debug='editorDebug' :rect-dup-check='rectDupCheck' :mouse-info='mouseInfo')
@@ -46,13 +56,16 @@ import {storeToRefs} from 'pinia';
 import * as Y from 'yjs';
 import {WebsocketProvider} from 'y-websocket';
 import YTextEdit from './editor-components/YTextEdit.vue';
+import YRichTextEdit from './editor-components/YRichTextEdit.vue';
 import EventLogger from './editor-components/EventLogger.vue';
 import type {TextSelectionChangeEvent} from './editor-components/editor-events';
+import type {SelectionAware} from './editor-components/selection-aware';
 
 const store = useStore();
 const {name} = storeToRefs(store);
 
 const editTxt = ref<InstanceType<typeof YTextEdit>>();
+const editTxt2 = ref<InstanceType<typeof YRichTextEdit>>();
 
 const editorDebug = ref(false);
 const rectDupCheck = ref(false);
@@ -61,6 +74,7 @@ const mouseInfo = ref(true);
 const doc = new Y.Doc();
 let map: Y.Map<any> | undefined;
 let title = ref<Y.Text | undefined>();
+let text = ref<Y.Text | undefined>();
 
 // Quick'n'dirty hack to get this working on Docker compose and localhost dev.
 // Basically, we assume that localhost address includes port number and
@@ -90,14 +104,17 @@ awareness.on('update', (update: AwarenessUpdate) => {
     .forEach((u) => {
       const s = awareness.getStates().get(u) as AwarenessInfo;
       console.log(`awareness ${u}:`, s);
-      if (editTxt.value && s.selection) {
+      if (s.selection) {
         const sel = s.selection;
+        let cmp: SelectionAware;
+        if (sel.cid === 'testedit' && editTxt.value) cmp = editTxt.value;
+        else if (editTxt2.value) cmp = editTxt2.value;
+        else return;
         const name = s.name || 'unknown';
-        editTxt.value.setSelection(
+        cmp.setSelection(
           `${u}`,
           name,
-          sel.start !== null && sel.start >= 0 ? sel.start : null,
-          sel.end !== null && sel.end >= 0 ? sel.end : null,
+          sel.ranges ? sel.ranges.map((r) => ({type: 'text', ...r})) : null,
         );
       }
     });
@@ -106,7 +123,10 @@ awareness.on('update', (update: AwarenessUpdate) => {
     .forEach((u: number) => {
       console.log(`awareness remove ${u}`);
       if (editTxt.value) {
-        editTxt.value.setSelection(`${u}`, '', null, null);
+        editTxt.value.setSelection(`${u}`, '', null);
+      }
+      if (editTxt2.value) {
+        editTxt2.value.setSelection(`${u}`, '', null);
       }
     });
 });
@@ -136,9 +156,12 @@ wsProvider.on('sync', (synced: any) => {
 
       console.log('New Title');
       title.value = new Y.Text('untitled');
+      text.value = new Y.Text('initial text');
       map.set('title', title.value);
+      map.set('text', text.value);
     } else {
       title.value = map.get('title');
+      text.value = map.get('text');
     }
     console.log('Title is:', title.value?.toJSON());
     if (!map.has('items')) {
