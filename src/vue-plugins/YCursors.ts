@@ -160,6 +160,7 @@ export class TextCursor extends Cursor<TextCursorData> {
     r: DOMRect,
     color: string,
     name: string,
+    nameVisible = true,
   ) {
     // Keep caret/selectin (almost) within target element.
     const er = this.target.getBoundingClientRect();
@@ -186,6 +187,7 @@ export class TextCursor extends Cursor<TextCursorData> {
     elems.curCaret.style.backgroundColor = color;
 
     elems.curName.textContent = name;
+    elems.curName.style.display = nameVisible ? '' : 'none';
   }
 
   private discardCursorElems(elems: TextCursorElems): void {
@@ -223,7 +225,7 @@ export class TextCursor extends Cursor<TextCursorData> {
       const r = rects[i];
       if (r) {
         const elems = this.useCursorElems(i);
-        this.updateCursorElems(elems, r, this.color, this.name);
+        this.updateCursorElems(elems, r, this.color, this.name, i === 0);
       } else {
         this.unuseCursorElems(i);
       }
