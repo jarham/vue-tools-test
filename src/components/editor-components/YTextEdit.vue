@@ -318,11 +318,19 @@ const selChange = () => {
   console.log('selChange', selStart, selEnd, rangeVisible, r1, r2, r);
   if (oldStart !== selStart || oldEnd !== selEnd) {
     console.log('selChange emit', selStart, selEnd);
-    emit('text-selection-change', {
-      cid: props.cid,
-      ranges:
-        selStart >= 0 && selEnd >= 0 ? [{start: selStart, end: selEnd}] : null,
-    });
+    // Only emit if we're active (have focus). Sel change can happen w/o
+    // focus when user has the editor focused, then switches to another app
+    // (alt+tab -> broser becomus "unfocused", editor stays as the active element)
+    // and then someone else modifies the shared content.
+    if (active.value) {
+      emit('text-selection-change', {
+        cid: props.cid,
+        ranges:
+          selStart >= 0 && selEnd >= 0
+            ? [{start: selStart, end: selEnd}]
+            : null,
+      });
+    }
     if (lastScrollLeft >= 0 && lastScrollLeft !== editorWrap.value.scrollLeft) {
       redrawCursors();
     }
@@ -350,7 +358,11 @@ onBeforeUnmount(() => {
 
 onUpdated(() => {
   console.log('onUpdated', txtModded, start, end);
-  if (txtModded) {
+  console.log('onUpdated, active', document.activeElement);
+  // If the broser has lost focus (active === false) the active
+  // element can still be the editor and we must take care of fixing the
+  // selection.
+  if (txtModded && (active.value || document.activeElement === editor.value)) {
     const sel = document.getSelection();
     const txtNode = editor.value?.childNodes[0];
     if (sel && txtNode) {
