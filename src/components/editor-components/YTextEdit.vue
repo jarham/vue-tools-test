@@ -2,8 +2,8 @@
 .y-component.y-text-edit.px-2.py-1.rounded.border.editable.position-relative(
   :class='{active: active}'
   ref='editorWrap'
-  @focusin='active=true'
-  @focusout='active=false'
+  @focusin='setActive(true)'
+  @focusout='setActive(false)'
 )
   .y-text-edit-editor(
       :contenteditable='typeof text === "string" ? "true" : "false"'
@@ -283,7 +283,8 @@ const selChange = () => {
     console.log('selChange emit', selStart, selEnd);
     emit('text-selection-change', {
       cid: props.cid,
-      ranges: [{start: selStart, end: selEnd}],
+      ranges:
+        selStart >= 0 && selEnd >= 0 ? [{start: selStart, end: selEnd}] : null,
     });
     if (lastScrollLeft >= 0 && lastScrollLeft !== editorWrap.value.scrollLeft) {
       redrawCursors();
@@ -421,6 +422,16 @@ function setSelection(
     });
   }
 }
+
+const setActive = (a: boolean) => {
+  active.value = a;
+  if (!a) {
+    emit('text-selection-change', {
+      cid: props.cid,
+      ranges: null,
+    });
+  }
+};
 
 defineExpose({
   setSelection,
