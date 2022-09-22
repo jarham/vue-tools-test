@@ -1,6 +1,6 @@
 <template lang="pug">
-.y-component.y-text-edit.px-2.py-1.rounded.border.editable.position-relative(
-  :class='{active: active}'
+.y-component.px-2.py-1.rounded.border.editable.position-relative(
+  :class='{active: active, "y-text-edit": !multiline, "y-text-edit-ml": multiline}'
   ref='editorWrap'
   @focusin='setActive(true)'
   @focusout='setActive(false)'
@@ -41,6 +41,7 @@ const props = defineProps<{
   cid: string;
   ytext?: Y.Text;
   autofocus?: boolean;
+  multiline?: boolean;
 }>();
 const emit = defineEmits<{
   (e: 'text-selection-change', change: TextSelectionChangeEvent): void;
@@ -65,6 +66,20 @@ watch(
         applyDelta(evt.delta, !tr.origin);
       });
       text.value = ytext.toJSON();
+    } else {
+      text.value = undefined;
+    }
+  },
+);
+watch(
+  () => props.multiline,
+  (multiline) => {
+    if (props.ytext) {
+      if (multiline) {
+        text.value = props.ytext.toJSON();
+      } else {
+        text.value = props.ytext.toJSON().replaceAll(/\r?\n\r?/g, ' ');
+      }
     } else {
       text.value = undefined;
     }
@@ -195,6 +210,12 @@ const onBeforeInput = (e: InputEvent) => {
   const end = r?.endOffset || start;
   const count = Math.max(end - start, 1);
   if (!props.ytext || composing) return;
+  const eTxt = props.multiline
+    ? e.data || e.dataTransfer?.getData('text/plain') || ''
+    : (e.data || e.dataTransfer?.getData('text/plain') || '').replaceAll(
+        /\r?\n\r?/g,
+        ' ',
+      );
   switch (e.inputType) {
     case 'insertText':
     case 'insertReplacementText':
@@ -203,13 +224,7 @@ const onBeforeInput = (e: InputEvent) => {
       if (end > start) {
         props.ytext.delete(start, count);
       }
-      props.ytext.insert(
-        start,
-        (e.data || e.dataTransfer?.getData('text/plain') || '').replaceAll(
-          /\r?\n\r?/g,
-          ' ',
-        ),
-      );
+      props.ytext.insert(start, eTxt);
       e.preventDefault();
       break;
     case 'deleteContentForward':
@@ -228,6 +243,12 @@ const onBeforeInput = (e: InputEvent) => {
       break;
     case 'insertLineBreak':
     case 'insertParagraph':
+      if (props.multiline) {
+        if (end > start) {
+          props.ytext.delete(start, count);
+        }
+        props.ytext.insert(start, '\n');
+      }
       e.preventDefault();
       break;
     default:
@@ -469,6 +490,15 @@ defineExpose({
   }
   .y-text-edit-editor {
     white-space: pre;
+    outline: none;
+  }
+}
+.y-text-edit-ml {
+  &.active {
+    outline: auto;
+  }
+  .y-text-edit-editor {
+    white-space: pre-wrap;
     outline: none;
   }
 }

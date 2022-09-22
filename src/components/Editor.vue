@@ -26,12 +26,13 @@
     small.after.text-nowrap.m-1.mt-2 &lt;-1 line edit
   .d-flex.justify-content-center.align-items-start.flex-wrap
     small.before.text-nowrap.m-1.mt-2 multiline edit-&gt;
-    YRichTextEdit(
+    YTextEdit(
       cid='testedit2'
       :ytext='text'
       style='width: 30ch;'
       @text-selection-change='onTextSelectionChange'
       ref='editTxt2'
+      :multiline='true'
     )
     small.after.text-nowrap.m-1.mt-2 &lt;-multiline edit
   .d-flex.justify-content-center
@@ -56,7 +57,6 @@ import {storeToRefs} from 'pinia';
 import * as Y from 'yjs';
 import {WebsocketProvider} from 'y-websocket';
 import YTextEdit from './editor-components/YTextEdit.vue';
-import YRichTextEdit from './editor-components/YRichTextEdit.vue';
 import EventLogger from './editor-components/EventLogger.vue';
 import type {TextSelectionChangeEvent} from './editor-components/editor-events';
 import type {SelectionAware} from './editor-components/selection-aware';
@@ -65,7 +65,7 @@ const store = useStore();
 const {name} = storeToRefs(store);
 
 const editTxt = ref<InstanceType<typeof YTextEdit>>();
-const editTxt2 = ref<InstanceType<typeof YRichTextEdit>>();
+const editTxt2 = ref<InstanceType<typeof YTextEdit>>();
 
 const editorDebug = ref(false);
 const rectDupCheck = ref(false);
