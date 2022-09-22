@@ -155,7 +155,23 @@ function getRangeInEditor(): Range | null {
 
   const startInEditor = r.startContainer.parentElement === editor.value;
   const endInEditor = r.endContainer.parentElement === editor.value;
-  if (!startInEditor || !endInEditor) return null;
+  if (!startInEditor || !endInEditor) {
+    // At least in Firefox select all (ctrl+a) causes range's start and end
+    // containers to be the editor (with startOffset=0 && endOffset=1). In that
+    // case r.commonAncestorContainer must still be the editor and we
+    // can create a range containing the text node child.
+    if (
+      r.commonAncestorContainer === editor.value &&
+      editor.value.firstChild &&
+      text.value
+    ) {
+      const tr = document.createRange();
+      tr.setStart(editor.value.firstChild, 0);
+      tr.setEnd(editor.value.firstChild, text.value.length);
+      return tr;
+    }
+    return null;
+  }
 
   return r;
 }
